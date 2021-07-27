@@ -3,6 +3,8 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'checkstyle'
+    id 'org.flywaydb.flyway' version '7.7.2'
+    id 'jacoco'
 }
 
 group = 'com.mgl'
@@ -20,14 +22,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.0'
     implementation project(':accounts-shared-library')
 
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:postgresql:42.2.19'
 
     annotationProcessor 'org.projectlombok:lombok'
     testAnnotationProcessor 'org.projectlombok:lombok'
@@ -39,6 +41,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 checkstyle {
@@ -57,4 +60,65 @@ tasks.register('release') {
     dependsOn tasks.checkstyle
     dependsOn tasks.test
     dependsOn tasks.build
+    finalizedBy 'copyJar'
+}
+
+tasks.register('copyJar', Copy) {
+    from "$buildDir/libs/accounts-service-1.0.0.jar"
+    into layout.projectDirectory.dir('../build')
+}
+
+tasks.getByName('copyJar').outputs.upToDateWhen { false }
+
+flyway {
+//  Dev Config
+    url = 'jdbc:postgresql://localhost:5432/postgres'
+    user = 'flyway_user'
+    password = 'flyway-user-password'
+
+//  Beta Config
+//    url = 'jdbc:postgresql://ec2-23-21-4-7.compute-1.amazonaws.com:5432/dabqivmifr0nba'
+//    user = 'pbtmstnzrfdqho'
+//    password = '1ec263f388c068aef27f7a2b47470f8804c307fd42f116444ac549e4d57702b1'
+
+//  Prod Config
+//    url = 'jdbc:postgresql://ec2-23-21-4-7.compute-1.amazonaws.com:5432/d3k455lqh89ur8'
+//    user = 'lnifendicvhlnd'
+//    password = 'f90d660dd43b2c64164f822979ce86361c506d2290f52139d4b19f1089bef044'
+
+    schemas = ['accountsdb']
+}
+
+jacoco {
+    toolVersion = '0.8.7'
+    reportsDirectory.set(file("$buildDir/jacoco"))
+}
+
+test.outputs.upToDateWhen { false }
+jacocoTestReport.outputs.upToDateWhen { false }
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.9
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/models/**',
+                    '**/exceptions/**',
+                    '**/dto/**',
+                    '**/dao/entities/**',
+                    '**/spring/**',
+                    '**/accountsservice/AccountsServiceApplication*'
+            ])
+        }))
+    }
 }
