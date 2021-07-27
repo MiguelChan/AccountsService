@@ -9,7 +9,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
  * Main entry point of the AccountsService.
  */
 @SpringBootApplication
-@EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class})
 public class AccountsServiceApplication {
 
     public static void main(String[] args) {

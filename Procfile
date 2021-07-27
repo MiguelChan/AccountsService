@@ -1,0 +1,1 @@
+web: java -jar ./build/accounts-service-1.0.0.jar --spring.profiles.active=prod

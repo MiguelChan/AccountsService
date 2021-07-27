@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'checkstyle'
+    id 'jacoco'
 }
 
 group 'com.mgl'
@@ -18,6 +19,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
 }
 
 checkstyle {
@@ -36,4 +38,35 @@ tasks.register('release') {
     dependsOn tasks.checkstyle
     dependsOn tasks.test
     dependsOn tasks.build
+}
+
+jacoco {
+    toolVersion = '0.8.7'
+    reportsDirectory.set(file("$buildDir/jacoco"))
+}
+
+test.outputs.upToDateWhen { false }
+jacocoTestReport.outputs.upToDateWhen { false }
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.9
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/models/**',
+                    '**/exceptions/**',
+                    '**/dto/**',
+            ])
+        }))
+    }
 }
