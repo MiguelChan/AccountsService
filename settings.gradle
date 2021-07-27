@@ -1,0 +1,4 @@
+rootProject.name = 'AccountsServiceWorkspace'
+include 'accounts-service'
+include 'accounts-shared-library'
+include 'functional-tests'
