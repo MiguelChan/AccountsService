@@ -4,6 +4,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.mgl.accountsservice.dao.HealthDao;
+import com.mgl.accountsservice.dto.PingResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,14 +28,16 @@ public class HealthControllerTests {
 
     @Test
     public void ping_should_returnTrue() {
-        assertThat(healthController.ping()).isTrue();
+        PingResponse pingResponse = healthController.ping();
+        assertThat(pingResponse.isHealthy()).isTrue();
     }
 
     @Test
     public void deepPing_should_returnTrue() {
         when(healthDao.isHealthy()).thenReturn(true);
 
-        assertThat(healthController.deepPing()).isTrue();
+        PingResponse pingResponse = healthController.deepPing();
+        assertThat(pingResponse.isHealthy()).isTrue();
     }
 
 }
