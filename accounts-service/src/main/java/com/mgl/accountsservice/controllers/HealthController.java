@@ -1,6 +1,7 @@
 package com.mgl.accountsservice.controllers;
 
 import com.mgl.accountsservice.dao.HealthDao;
+import com.mgl.accountsservice.dto.PingResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,8 +29,10 @@ public class HealthController {
      */
     @GetMapping
     @RequestMapping("/ping")
-    public boolean ping() {
-        return true;
+    public PingResponse ping() {
+        return PingResponse.builder()
+            .healthy(true)
+            .build();
     }
 
     /**
@@ -39,8 +42,11 @@ public class HealthController {
      */
     @GetMapping
     @RequestMapping("/deep_ping")
-    public boolean deepPing() {
-        return healthDao.isHealthy();
+    public PingResponse deepPing() {
+        boolean isHealthy = healthDao.isHealthy();
+        return PingResponse.builder()
+            .healthy(isHealthy)
+            .build();
     }
 
 }

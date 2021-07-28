@@ -24,4 +24,4 @@ jobs:
           java-package: jdk
           architecture: x64
       - name: Run release script
-        run: ./gradlew release
+        run: ./gradlew release -Pskip-functional-tests
