@@ -1,5 +1,7 @@
 package com.mgl.accountsservice.integration.clients.impl;
 
+import com.mgl.accountsservice.dto.CreateAccountRequest;
+import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 import com.mgl.accountsservice.integration.clients.AccountsServiceClient;
 import javax.inject.Inject;
@@ -28,6 +30,11 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
     @Override
     public PingResponse deepPing() throws Exception {
         return makeCall(retrofitAccountsClient.deepPing());
+    }
+
+    @Override
+    public CreateAccountResponse createAccount(CreateAccountRequest request) throws Exception {
+        return makeCall(retrofitAccountsClient.createAccount(request));
     }
 
     private <T> T makeCall(Call<T> callMethod) throws Exception {
