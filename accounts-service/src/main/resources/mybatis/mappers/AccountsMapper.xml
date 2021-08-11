@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mgl.accountsservice.dao.mappers.AccountsMapper">
+    <insert id="insertAccount" parameterType="com.mgl.accountsservice.dao.entities.AccountEntity">
+        INSERT INTO accountsdb.accounts (
+            id,
+            name,
+            account_type,
+            created_by,
+            created_at,
+            last_updated_at
+        ) VALUES (
+            #{id},
+            #{name},
+            #{accountType},
+            #{createdBy},
+            NOW(),
+            NOW()
+        )
+    </insert>
+</mapper>

@@ -2,6 +2,7 @@ package com.mgl.accountsservice.integration.tests;
 
 import com.mgl.accountsservice.integration.clients.AccountsServiceClient;
 import com.mgl.accountsservice.integration.modules.ClientModule;
+import com.mgl.accountsservice.integration.utils.DataCurator;
 import javax.inject.Inject;
 import org.testng.annotations.Guice;
 
@@ -15,5 +16,7 @@ public class BaseTests {
 
     @Inject
     protected AccountsServiceClient serviceClient;
+    @Inject
+    protected DataCurator dataCurator;
 
 }

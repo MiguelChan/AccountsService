@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class Auditable {
-    private String createdBy;
-    private LocalDateTime createdAt;
-    private LocalDateTime lastUpdatedAt;
+    protected String createdBy;
+    protected LocalDateTime createdAt;
+    protected LocalDateTime lastUpdatedAt;
 }
