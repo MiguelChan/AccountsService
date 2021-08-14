@@ -16,6 +16,6 @@ public interface SubAccountsDao {
      *
      * @throws DatabaseException .
      */
-    void insertSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException;
+    String insertSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException;
 
 }

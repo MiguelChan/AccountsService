@@ -56,9 +56,11 @@ public class CreateAccountComponent {
      * @param account .
      *
      * @param requestingUser .
+     *
+     * @return The newly created account id.
      */
     @Transactional
-    public void createAccount(Account account, String requestingUser) {
+    public String createAccount(Account account, String requestingUser) {
         log.info("Attempting to insert new account: {}", account);
 
         AccountEntity accountEntity = accountsEntityMapper.fromModel(account);
@@ -69,10 +71,13 @@ public class CreateAccountComponent {
             .collect(Collectors.toList());
 
         try {
-            accountsDao.insertAccount(accountEntity);
+            String accountId = accountsDao.insertAccount(accountEntity);
             for (SubAccountEntity currentEntity : subAccountEntities) {
+                currentEntity.setAccountId(accountId);
+                currentEntity.setCreatedBy(requestingUser);
                 subAccountsDao.insertSubAccount(currentEntity);
             }
+            return accountId;
         } catch (DatabaseException e) {
             log.error("An error occurred when trying to insert the Account.", e);
             throw e;

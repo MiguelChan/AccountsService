@@ -1,5 +1,6 @@
 package com.mgl.accountsservice.dao.impl;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,11 +43,12 @@ public class MyBatisAccountsDaoTests {
 
         AccountEntity accountEntity = EnhancedRandom.random(AccountEntity.class, "id");
 
-        accountsDao.insertAccount(accountEntity);
+        String newId = accountsDao.insertAccount(accountEntity);
 
         accountEntity.setId(randomId);
 
         verify(accountsMapper).insertAccount(accountEntity);
+        assertThat(newId).isEqualTo(randomId);
     }
 
 }

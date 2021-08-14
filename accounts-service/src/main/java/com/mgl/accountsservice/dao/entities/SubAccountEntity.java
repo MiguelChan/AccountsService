@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class SubAccountEntity {
     private String id;
+    private String accountId;
     private String description;
     private String createdBy;
     private LocalDateTime createdAt;

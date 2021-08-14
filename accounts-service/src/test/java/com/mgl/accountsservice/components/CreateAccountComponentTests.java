@@ -55,6 +55,7 @@ public class CreateAccountComponentTests {
     @Test
     public void createAccount_should_createAnAccount() {
         String testUserId = "someRandomUser";
+        String expectedAccountId = EnhancedRandom.random(String.class);
 
         Account account = EnhancedRandom.random(Account.class, "subAccounts");
         SubAccount subAccount = EnhancedRandom.random(SubAccount.class);
@@ -65,12 +66,16 @@ public class CreateAccountComponentTests {
         accountEntity.setCreatedBy(testUserId);
         SubAccountEntity subAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
 
+        when(accountsDao.insertAccount(accountEntity)).thenReturn(expectedAccountId);
+
         when(accountsEntityMapper.fromModel(account)).thenReturn(accountEntity);
         when(subAccountsEntityMapper.fromModel(subAccount)).thenReturn(subAccountEntity);
 
         createAccountComponent.createAccount(account, testUserId);
 
         verify(accountsDao).insertAccount(accountEntity);
+
+        subAccountEntity.setAccountId(expectedAccountId);
         verify(subAccountsDao).insertSubAccount(subAccountEntity);
     }
 

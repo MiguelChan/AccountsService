@@ -30,7 +30,7 @@ public class MyBatisAccountsDao implements AccountsDao {
 
     @Transactional
     @Override
-    public void insertAccount(AccountEntity accountEntity) throws DatabaseException {
+    public String insertAccount(AccountEntity accountEntity) throws DatabaseException {
         String accountId = randomIdGenerator.generateRandomId(ACCOUNT_PREFIX);
         accountEntity.setId(accountId);
 
@@ -38,5 +38,7 @@ public class MyBatisAccountsDao implements AccountsDao {
         log.info("Generated Id is: {}", accountId);
 
         accountsMapper.insertAccount(accountEntity);
+
+        return accountId;
     }
 }

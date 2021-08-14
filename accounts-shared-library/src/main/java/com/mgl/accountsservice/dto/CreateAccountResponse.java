@@ -12,10 +12,25 @@ import lombok.EqualsAndHashCode;
 public class CreateAccountResponse extends BaseResponse {
 
     private boolean success;
+    private String accountId;
 
+    /**
+     * .
+     *
+     * @param success .
+     *
+     * @param message .
+     *
+     * @param accountId .
+     */
     @Builder
-    public CreateAccountResponse(boolean success, String message) {
+    public CreateAccountResponse(
+        boolean success,
+        String message,
+        String accountId
+    ) {
         super(message);
         this.success = success;
+        this.accountId = accountId;
     }
 }

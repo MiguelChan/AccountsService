@@ -12,7 +12,9 @@ public interface AccountsDao {
      * Inserts a {@link AccountEntity} into the DataStorage.
      *
      * @param accountEntity The entity to insert.
+     *
+     * @return The new id of the Account.
      */
-    void insertAccount(AccountEntity accountEntity) throws DatabaseException;
+    String insertAccount(AccountEntity accountEntity) throws DatabaseException;
 
 }
