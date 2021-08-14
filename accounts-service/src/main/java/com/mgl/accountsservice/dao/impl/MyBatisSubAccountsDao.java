@@ -2,8 +2,11 @@ package com.mgl.accountsservice.dao.impl;
 
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
+import com.mgl.accountsservice.dao.mappers.SubAccountsMapper;
 import com.mgl.accountsservice.exceptions.DatabaseException;
+import com.mgl.accountsservice.utils.RandomIdGenerator;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +17,29 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class MyBatisSubAccountsDao implements SubAccountsDao {
 
+    private static final String SUBACCOUNT_PREFIX = "sbacct";
+
+    private final SubAccountsMapper subAccountsMapper;
+    private final RandomIdGenerator randomIdGenerator;
+
+    @Autowired
+    public MyBatisSubAccountsDao(SubAccountsMapper subAccountsMapper,
+                                 RandomIdGenerator randomIdGenerator) {
+        this.subAccountsMapper = subAccountsMapper;
+        this.randomIdGenerator = randomIdGenerator;
+    }
+
     @Transactional
     @Override
-    public void insertSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException {
+    public String insertSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException {
+        String subAccountId = randomIdGenerator.generateRandomId(SUBACCOUNT_PREFIX);
+        subAccountEntity.setId(subAccountId);
 
+        log.info("Attempting to insert the SubAccountEntity: {}", subAccountEntity);
+        log.info("Generated SubAccount Id is: {}", subAccountId);
+
+        subAccountsMapper.insertSubAccount(subAccountEntity);
+
+        return subAccountId;
     }
 }

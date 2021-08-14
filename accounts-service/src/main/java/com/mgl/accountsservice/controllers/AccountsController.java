@@ -47,9 +47,10 @@ public class AccountsController {
         Account account = request.getAccount();
         String requestingUser = request.getRequestingUser();
         try {
-            createAccountComponent.createAccount(account, requestingUser);
+            String accountId = createAccountComponent.createAccount(account, requestingUser);
             return CreateAccountResponse.builder()
                 .success(true)
+                .accountId(accountId)
                 .build();
         } catch (Exception e) {
             return CreateAccountResponse.builder()

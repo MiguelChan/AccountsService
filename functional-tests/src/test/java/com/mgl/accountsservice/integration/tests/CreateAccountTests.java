@@ -1,5 +1,7 @@
 package com.mgl.accountsservice.integration.tests;
 
+import static org.testng.AssertJUnit.assertFalse;
+import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertNull;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -41,6 +43,8 @@ public class CreateAccountTests extends BaseTests {
 
         assertTrue(response.isSuccess());
         assertNull(response.getMessage());
+        assertNotNull(response.getAccountId());
+        assertFalse(response.getAccountId().isEmpty());
     }
 
 }

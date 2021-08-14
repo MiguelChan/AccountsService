@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mgl.accountsservice.dao.mappers.SubAccountsMapper">
+    <insert id="insertSubAccount" parameterType="com.mgl.accountsservice.dao.entities.SubAccountEntity">
+        INSERT INTO accountsdb.sub_accounts (
+            id,
+            description,
+            account_id,
+            created_by,
+            created_at,
+            last_updated_at
+        ) VALUES (
+            #{id},
+            #{description},
+            #{accountId},
+            #{createdBy},
+            NOW(),
+            NOW()
+        )
+    </insert>
+</mapper>
