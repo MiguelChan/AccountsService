@@ -2,6 +2,7 @@ package com.mgl.accountsservice.integration.clients.impl;
 
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -38,4 +39,12 @@ public interface RetrofitAccountsClient {
      */
     @POST("accounts")
     Call<CreateAccountResponse> createAccount(@Body CreateAccountRequest request);
+
+    /**
+     * .
+     *
+     * @return .
+     */
+    @GET("accounts")
+    Call<GetAccountsResponse> getAccounts();
 }

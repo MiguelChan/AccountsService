@@ -2,6 +2,8 @@ package com.mgl.accountsservice.integration.clients.impl;
 
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountsRequest;
+import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 import com.mgl.accountsservice.integration.clients.AccountsServiceClient;
 import javax.inject.Inject;
@@ -35,6 +37,11 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
     @Override
     public CreateAccountResponse createAccount(CreateAccountRequest request) throws Exception {
         return makeCall(retrofitAccountsClient.createAccount(request));
+    }
+
+    @Override
+    public GetAccountsResponse getAccounts(GetAccountsRequest request) throws Exception {
+        return makeCall(retrofitAccountsClient.getAccounts());
     }
 
     private <T> T makeCall(Call<T> callMethod) throws Exception {

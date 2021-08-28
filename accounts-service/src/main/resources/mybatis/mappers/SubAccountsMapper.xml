@@ -3,6 +3,15 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mgl.accountsservice.dao.mappers.SubAccountsMapper">
+    <resultMap id="SubAccount" type="com.mgl.accountsservice.dao.entities.SubAccountEntity">
+        <id property="id" column="id" />
+        <result property="accountId" column="account_id" />
+        <result property="description" column="description" />
+        <result property="createdBy" column="created_by" />
+        <result property="createdAt" column="created_at" />
+        <result property="lastUpdatedAt" column="last_updated_at" />
+    </resultMap>
+
     <insert id="insertSubAccount" parameterType="com.mgl.accountsservice.dao.entities.SubAccountEntity">
         INSERT INTO accountsdb.sub_accounts (
             id,
@@ -20,4 +29,17 @@
             NOW()
         )
     </insert>
+
+    <select id="getSubAccounts" resultMap="SubAccount">
+        SELECT
+            sa.id,
+            sa.description,
+            sa.account_id,
+            sa.created_by,
+            sa.created_at,
+            sa.last_updated_at
+        FROM accountsdb.sub_accounts AS sa
+        WHERE
+            sa.account_id = #{accountId}
+    </select>
 </mapper>
