@@ -52,4 +52,24 @@ public class MyBatisAccountsDao implements AccountsDao {
             throw new DatabaseException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public AccountEntity getAccount(String accountId) throws DatabaseException {
+        log.info("Attempting to retrieve Account with Id: {}", accountId);
+        try {
+            return accountsMapper.getAccount(accountId);
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deleteAccount(String accountId) throws DatabaseException {
+        log.info("Attempting to Delete Account with Id: {}", accountId);
+        try {
+            accountsMapper.deleteAccount(accountId);
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
 }

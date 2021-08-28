@@ -27,4 +27,24 @@ public interface AccountsDao {
      */
     List<AccountEntity> getAccounts() throws DatabaseException;
 
+    /**
+     * Gets an {@link AccountEntity} based off its Id.
+     *
+     * @param accountId .
+     *
+     * @return .
+     *
+     * @throws DatabaseException .
+     */
+    AccountEntity getAccount(String accountId) throws DatabaseException;
+
+    /**
+     * Deletes a {@link AccountEntity} based off its id.
+     *
+     * @param accountId .
+     *
+     * @throws DatabaseException .
+     */
+    void deleteAccount(String accountId) throws DatabaseException;
+
 }

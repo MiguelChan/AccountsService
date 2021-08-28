@@ -3,6 +3,7 @@ package com.mgl.accountsservice.dao.impl;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +72,44 @@ public class MyBatisAccountsDaoTests {
         when(accountsMapper.getAccounts()).thenThrow(RuntimeException.class);
 
         assertThatThrownBy(() -> accountsDao.getAccounts())
+            .isInstanceOfAny(DatabaseException.class);
+    }
+
+    @Test
+    public void getAccount_should_getAccount() throws Exception {
+        String testAccountId = "SomeId";
+
+        AccountEntity expectedAccountEntity = EnhancedRandom.random(AccountEntity.class);
+
+        when(accountsMapper.getAccount(testAccountId)).thenReturn(expectedAccountEntity);
+
+        AccountEntity foundAccount = accountsDao.getAccount(testAccountId);
+
+        assertThat(foundAccount).isEqualTo(expectedAccountEntity);
+    }
+
+    @Test
+    public void getAccount_should_bubbleUpException() throws Exception {
+        when(accountsMapper.getAccount(any())).thenThrow(RuntimeException.class);
+
+        assertThatThrownBy(() -> accountsDao.getAccount("SomeSome"))
+            .isInstanceOfAny(DatabaseException.class);
+    }
+
+    @Test
+    public void deleteAccount_should_delete() throws Exception {
+        String testAccountId = "SomeId";
+
+        accountsDao.deleteAccount(testAccountId);
+
+        verify(accountsMapper).deleteAccount(testAccountId);
+    }
+
+    @Test
+    public void deleteAccount_should_bubbleUpExceptions() throws Exception {
+        doThrow(RuntimeException.class).when(accountsMapper).deleteAccount(any());
+
+        assertThatThrownBy(() -> accountsDao.deleteAccount("someSome"))
             .isInstanceOfAny(DatabaseException.class);
     }
 
