@@ -25,4 +25,24 @@ public interface AccountsMapper {
      */
     List<AccountEntity> getAccounts() throws DatabaseException;
 
+    /**
+     * .
+     *
+     * @param accountId .
+     *
+     * @return .
+     *
+     * @throws DatabaseException .
+     */
+    AccountEntity getAccount(String accountId) throws DatabaseException;
+
+    /**
+     * .
+     *
+     * @param accountId .
+     *
+     * @throws DatabaseException .
+     */
+    void deleteAccount(String accountId) throws DatabaseException;
+
 }
