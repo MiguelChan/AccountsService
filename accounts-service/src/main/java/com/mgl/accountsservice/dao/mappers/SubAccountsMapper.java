@@ -2,6 +2,7 @@ package com.mgl.accountsservice.dao.mappers;
 
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
 import com.mgl.accountsservice.exceptions.DatabaseException;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -18,5 +19,16 @@ public interface SubAccountsMapper {
      * @throws DatabaseException .
      */
     void insertSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException;
+
+    /**
+     * .
+     *
+     * @param accountId .
+     *
+     * @return .
+     *
+     * @throws DatabaseException .
+     */
+    List<SubAccountEntity> getSubAccounts(String accountId) throws DatabaseException;
 
 }

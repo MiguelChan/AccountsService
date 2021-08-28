@@ -5,6 +5,7 @@ import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.mappers.AccountsMapper;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.utils.RandomIdGenerator;
+import java.util.List;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -40,5 +41,15 @@ public class MyBatisAccountsDao implements AccountsDao {
         accountsMapper.insertAccount(accountEntity);
 
         return accountId;
+    }
+
+    @Override
+    public List<AccountEntity> getAccounts() throws DatabaseException {
+        log.info("Attempting to retrieve all Accounts");
+        try {
+            return accountsMapper.getAccounts();
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
     }
 }

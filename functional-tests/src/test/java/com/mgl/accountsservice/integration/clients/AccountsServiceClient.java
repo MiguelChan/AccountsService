@@ -2,6 +2,8 @@ package com.mgl.accountsservice.integration.clients;
 
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountsRequest;
+import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 
 /**
@@ -37,5 +39,16 @@ public interface AccountsServiceClient {
      * @throws Exception .
      */
     CreateAccountResponse createAccount(CreateAccountRequest request) throws Exception;
+
+    /**
+     * Gets a List of all the Accounts.
+     *
+     * @param request .
+     *
+     * @return .
+     *
+     * @throws Exception .
+     */
+    GetAccountsResponse getAccounts(GetAccountsRequest request) throws Exception;
 
 }

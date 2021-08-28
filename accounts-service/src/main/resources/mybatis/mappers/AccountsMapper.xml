@@ -3,6 +3,16 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.mgl.accountsservice.dao.mappers.AccountsMapper">
+
+    <resultMap id="Account" type="com.mgl.accountsservice.dao.entities.AccountEntity">
+        <id property="id" column="id" />
+        <result property="name" column="name" />
+        <result property="accountType" column="account_type" />
+        <result property="createdBy" column="created_by" />
+        <result property="createdAt" column="created_at" />
+        <result property="lastUpdatedAt" column="last_updated_at" />
+    </resultMap>
+
     <insert id="insertAccount" parameterType="com.mgl.accountsservice.dao.entities.AccountEntity">
         INSERT INTO accountsdb.accounts (
             id,
@@ -20,4 +30,15 @@
             NOW()
         )
     </insert>
+
+    <select id="getAccounts" resultMap="Account">
+        SELECT
+            a.id,
+            a.name,
+            a.account_type,
+            a.created_by,
+            a.created_at,
+            a.last_updated_at
+        FROM accountsdb.accounts AS a
+    </select>
 </mapper>

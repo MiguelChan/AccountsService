@@ -7,10 +7,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.mgl.accountsservice.components.CreateAccountComponent;
+import com.mgl.accountsservice.components.GetAccountsComponent;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.models.Account;
 import io.github.benas.randombeans.api.EnhancedRandom;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,12 +30,14 @@ public class AccountsControllerTests {
 
     @Mock
     private CreateAccountComponent createAccountComponent;
+    @Mock
+    private GetAccountsComponent getAccountsComponent;
 
     private AccountsController accountsController;
 
     @BeforeEach
     public void setup() {
-        accountsController = new AccountsController(createAccountComponent);
+        accountsController = new AccountsController(createAccountComponent, getAccountsComponent);
     }
 
     @Test
@@ -74,4 +79,29 @@ public class AccountsControllerTests {
         verify(createAccountComponent).createAccount(account, TEST_USER);
     }
 
+    @Test
+    public void getAccounts_should_getAllAccounts() {
+        List<Account> randomAccounts = EnhancedRandom.randomListOf(5, Account.class);
+
+        when(getAccountsComponent.getAccounts()).thenReturn(randomAccounts);
+
+        GetAccountsResponse response = accountsController.getAccounts();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getAccounts()).isEqualTo(randomAccounts);
+    }
+
+    @Test
+    public void getAccounts_should_returnErrorMessage_when_errorOccurs() {
+        String errorMessage = "SomeException";
+        RuntimeException runtimeException = new RuntimeException(errorMessage);
+
+        when(getAccountsComponent.getAccounts()).thenThrow(runtimeException);
+
+        GetAccountsResponse response = accountsController.getAccounts();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getAccounts()).isNull();
+        assertThat(response.getMessage()).isEqualTo(errorMessage);
+    }
 }
