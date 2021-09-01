@@ -4,6 +4,8 @@ import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountRequest;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
+import com.mgl.accountsservice.dto.DeleteSubAccountRequest;
+import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
@@ -63,5 +65,16 @@ public interface AccountsServiceClient {
      * @throws Exception .
      */
     DeleteAccountResponse deleteAccount(DeleteAccountRequest request) throws Exception;
+
+    /**
+     * Deletes a SubAccount based off its subAccountId.
+     *
+     * @param request .
+     *
+     * @return .
+     *
+     * @throws Exception .
+     */
+    DeleteSubAccountResponse deleteSubAccount(DeleteSubAccountRequest request) throws Exception;
 
 }

@@ -4,6 +4,8 @@ import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountRequest;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
+import com.mgl.accountsservice.dto.DeleteSubAccountRequest;
+import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
@@ -50,6 +52,13 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
     public DeleteAccountResponse deleteAccount(DeleteAccountRequest request) throws Exception {
         String accountId = request.getAccountId();
         return makeCall(retrofitAccountsClient.deleteAccount(accountId));
+    }
+
+    @Override
+    public DeleteSubAccountResponse deleteSubAccount(DeleteSubAccountRequest request)
+        throws Exception {
+        String subAccountId = request.getSubAccountId();
+        return makeCall(retrofitAccountsClient.deleteSubAccount(subAccountId));
     }
 
     private <T> T makeCall(Call<T> callMethod) throws Exception {

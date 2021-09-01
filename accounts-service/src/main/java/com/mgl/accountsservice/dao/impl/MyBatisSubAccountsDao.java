@@ -53,4 +53,25 @@ public class MyBatisSubAccountsDao implements SubAccountsDao {
             throw new DatabaseException(e.getMessage(), e);
         }
     }
+
+    @Override
+    public void deleteSubAccount(String subAccountId) throws DatabaseException {
+        log.info("Attempting to delete SubAccount with Id: {}", subAccountId);
+        try {
+            subAccountsMapper.deleteSubAccount(subAccountId);
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public SubAccountEntity getSubAccount(String subAccountId) throws DatabaseException {
+        log.info("Attempting to retrieve SubAccount with Id: {}", subAccountId);
+
+        try {
+            return subAccountsMapper.getSubAccount(subAccountId);
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
 }

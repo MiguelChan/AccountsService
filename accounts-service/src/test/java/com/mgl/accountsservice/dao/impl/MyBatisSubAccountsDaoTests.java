@@ -3,6 +3,8 @@ package com.mgl.accountsservice.dao.impl;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +73,43 @@ public class MyBatisSubAccountsDaoTests {
         when(subAccountsMapper.getSubAccounts(any())).thenThrow(RuntimeException.class);
 
         assertThatThrownBy(() -> myBatisSubAccountsDao.getSubAccounts("Id"))
+            .isInstanceOfAny(DatabaseException.class);
+    }
+
+    @Test
+    public void getSubAccount_should_returnSubAccount() throws Exception {
+        String subAccountId = "SubAccountId";
+        SubAccountEntity expectedSubAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
+
+        when(subAccountsMapper.getSubAccount(subAccountId)).thenReturn(expectedSubAccountEntity);
+
+        SubAccountEntity subAccountEntity = myBatisSubAccountsDao.getSubAccount(subAccountId);
+
+        assertThat(subAccountEntity).isEqualTo(expectedSubAccountEntity);
+    }
+
+    @Test
+    public void getSubAccount_should_bubbleUpException() throws Exception {
+        when(subAccountsMapper.getSubAccount(anyString())).thenThrow(RuntimeException.class);
+
+        assertThatThrownBy(() -> myBatisSubAccountsDao.getSubAccount("Id"))
+            .isInstanceOfAny(DatabaseException.class);
+    }
+
+    @Test
+    public void deleteSubAccount_should_deleteSubAccount() throws Exception {
+        String subAccountId = "SomeId";
+
+        myBatisSubAccountsDao.deleteSubAccount(subAccountId);
+
+        verify(subAccountsMapper).deleteSubAccount(subAccountId);
+    }
+
+    @Test
+    public void deleteSubAccount_should_bubbleUpException() throws Exception {
+        doThrow(RuntimeException.class).when(subAccountsMapper).deleteSubAccount(anyString());
+
+        assertThatThrownBy(() -> myBatisSubAccountsDao.deleteSubAccount("someSome"))
             .isInstanceOfAny(DatabaseException.class);
     }
 

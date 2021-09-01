@@ -3,6 +3,7 @@ package com.mgl.accountsservice.integration.clients.impl;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
+import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 import retrofit2.Call;
@@ -60,4 +61,14 @@ public interface RetrofitAccountsClient {
      */
     @DELETE("accounts/{accountId}")
     Call<DeleteAccountResponse> deleteAccount(@Path("accountId") String accountId);
+
+    /**
+     * .
+     *
+     * @param subAccountId .
+     *
+     * @return .
+     */
+    @DELETE("subAccounts/{subAccountId}")
+    Call<DeleteSubAccountResponse> deleteSubAccount(@Path("subAccountId") String subAccountId);
 }
