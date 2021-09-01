@@ -30,4 +30,24 @@ public interface SubAccountsDao {
      */
     List<SubAccountEntity> getSubAccounts(String accountId) throws DatabaseException;
 
+    /**
+     * Deletes the provided {@link SubAccountEntity} given the provided Id.
+     *
+     * @param subAccountId .
+     *
+     * @throws DatabaseException .
+     */
+    void deleteSubAccount(String subAccountId) throws DatabaseException;
+
+    /**
+     * Retrieves a {@link SubAccountEntity} using the provided Id.
+     *
+     * @param subAccountId .
+     *
+     * @return .
+     *
+     * @throws DatabaseException .
+     */
+    SubAccountEntity getSubAccount(String subAccountId) throws DatabaseException;
+
 }

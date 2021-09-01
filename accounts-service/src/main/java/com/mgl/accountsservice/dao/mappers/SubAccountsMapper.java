@@ -31,4 +31,24 @@ public interface SubAccountsMapper {
      */
     List<SubAccountEntity> getSubAccounts(String accountId) throws DatabaseException;
 
+    /**
+     * .
+     *
+     * @param subAccountId .
+     *
+     * @throws DatabaseException .
+     */
+    void deleteSubAccount(String subAccountId) throws DatabaseException;
+
+    /**
+     * .
+     *
+     * @param subAccountId .
+     *
+     * @return .
+     *
+     * @throws DatabaseException .
+     */
+    SubAccountEntity getSubAccount(String subAccountId) throws DatabaseException;
+
 }
