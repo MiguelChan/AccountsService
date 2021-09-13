@@ -4,6 +4,7 @@ import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
 import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
 import retrofit2.Call;
@@ -71,4 +72,14 @@ public interface RetrofitAccountsClient {
      */
     @DELETE("subAccounts/{subAccountId}")
     Call<DeleteSubAccountResponse> deleteSubAccount(@Path("subAccountId") String subAccountId);
+
+    /**
+     * .
+     *
+     * @param accountId .
+     *
+     * @return .
+     */
+    @GET("accounts/{accountId}")
+    Call<GetAccountByIdResponse> getAccount(@Path("accountId") String accountId);
 }

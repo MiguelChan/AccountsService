@@ -2,10 +2,12 @@ package com.mgl.accountsservice.controllers;
 
 import com.mgl.accountsservice.components.CreateAccountComponent;
 import com.mgl.accountsservice.components.DeleteAccountComponent;
+import com.mgl.accountsservice.components.GetAccountByIdComponent;
 import com.mgl.accountsservice.components.GetAccountsComponent;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.models.Account;
 import java.util.List;
@@ -36,6 +38,7 @@ public class AccountsController {
     private final CreateAccountComponent createAccountComponent;
     private final GetAccountsComponent getAccountsComponent;
     private final DeleteAccountComponent deleteAccountComponent;
+    private final GetAccountByIdComponent getAccountByIdComponent;
 
     /**
      * .
@@ -45,10 +48,12 @@ public class AccountsController {
     @Autowired
     public AccountsController(CreateAccountComponent createAccountComponent,
                               GetAccountsComponent getAccountsComponent,
-                              DeleteAccountComponent deleteAccountComponent) {
+                              DeleteAccountComponent deleteAccountComponent,
+                              GetAccountByIdComponent getAccountByIdComponent) {
         this.createAccountComponent = createAccountComponent;
         this.getAccountsComponent = getAccountsComponent;
         this.deleteAccountComponent = deleteAccountComponent;
+        this.getAccountByIdComponent = getAccountByIdComponent;
     }
 
     /**
@@ -119,6 +124,38 @@ public class AccountsController {
                 .build();
         } catch (Exception e) {
             return DeleteAccountResponse.builder()
+                .success(false)
+                .message(e.getMessage())
+                .build();
+        }
+    }
+
+    /**
+     * .
+     *
+     * @param accountId .
+     *
+     * @return .
+     */
+    @GetMapping(value = "/accounts/{accountId}", consumes = MediaType.ALL_VALUE)
+    public GetAccountByIdResponse getAccount(@PathVariable String accountId) {
+        log.info("Attempting to fetch Account by Id: {}", accountId);
+        try {
+            Optional<Account> foundAccount = getAccountByIdComponent.getAccount(accountId);
+
+            if (foundAccount.isPresent()) {
+                return GetAccountByIdResponse.builder()
+                    .account(foundAccount.get())
+                    .success(true)
+                    .build();
+            }
+
+            return GetAccountByIdResponse.builder()
+                .message("AccountId not found")
+                .success(false)
+                .build();
+        } catch (Exception e) {
+            return GetAccountByIdResponse.builder()
                 .success(false)
                 .message(e.getMessage())
                 .build();
