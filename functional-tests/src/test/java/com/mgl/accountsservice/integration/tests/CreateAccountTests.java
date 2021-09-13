@@ -7,6 +7,8 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountByIdRequest;
+import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.models.Account;
 import com.mgl.accountsservice.models.SubAccount;
 import io.github.benas.randombeans.api.EnhancedRandom;
@@ -45,6 +47,15 @@ public class CreateAccountTests extends BaseTests {
         assertNull(response.getMessage());
         assertNotNull(response.getAccountId());
         assertFalse(response.getAccountId().isEmpty());
+
+        GetAccountByIdRequest getByIdRequest = GetAccountByIdRequest.builder()
+            .accountId(response.getAccountId())
+            .build();
+
+        GetAccountByIdResponse getByIdResponse = this.serviceClient.getAccount(getByIdRequest);
+        assertNotNull(getByIdResponse);
+        assertTrue(getByIdResponse.isSuccess());
+        assertNotNull(getByIdResponse.getAccount());
     }
 
 }

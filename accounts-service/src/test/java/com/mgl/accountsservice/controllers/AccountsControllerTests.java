@@ -8,10 +8,12 @@ import static org.mockito.Mockito.when;
 
 import com.mgl.accountsservice.components.CreateAccountComponent;
 import com.mgl.accountsservice.components.DeleteAccountComponent;
+import com.mgl.accountsservice.components.GetAccountByIdComponent;
 import com.mgl.accountsservice.components.GetAccountsComponent;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.models.Account;
@@ -38,6 +40,8 @@ public class AccountsControllerTests {
     private GetAccountsComponent getAccountsComponent;
     @Mock
     private DeleteAccountComponent deleteAccountComponent;
+    @Mock
+    private GetAccountByIdComponent getAccountByIdComponent;
 
     private AccountsController accountsController;
 
@@ -49,7 +53,8 @@ public class AccountsControllerTests {
         accountsController = new AccountsController(
             createAccountComponent,
             getAccountsComponent,
-            deleteAccountComponent
+            deleteAccountComponent,
+            getAccountByIdComponent
         );
     }
 
@@ -157,4 +162,51 @@ public class AccountsControllerTests {
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getDeletedAccount()).isNull();
     }
+
+    @Test
+    public void getAccountById_should_returnAccount() {
+        String testAccountId = "SomeSome";
+
+        Account expectedAccount = EnhancedRandom.random(Account.class);
+
+        when(getAccountByIdComponent.getAccount(testAccountId))
+            .thenReturn(Optional.of(expectedAccount));
+
+        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.isSuccess()).isTrue();
+
+        Account foundAccount = response.getAccount();
+        assertThat(foundAccount).isEqualTo(expectedAccount);
+    }
+
+    @Test
+    public void getAccountById_should_returnEmptyResponse_when_accountDoesNotExist() {
+        String testAccountId = "SomeSome";
+
+        when(getAccountByIdComponent.getAccount(testAccountId)).thenReturn(Optional.empty());
+
+        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
+
+        assertThat(response).isNotNull();
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.getAccount()).isNull();
+    }
+
+    @Test
+    public void getAccountById_should_returnEmptyResponse_when_componentFails() {
+        String testAccountId = "SomeSome";
+        String expectedErrorMessage = "There was an unexpected error";
+
+        RuntimeException exception = new RuntimeException(expectedErrorMessage);
+
+        when(getAccountByIdComponent.getAccount(testAccountId)).thenThrow(exception);
+
+        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
+
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.getMessage()).isEqualTo(expectedErrorMessage);
+    }
+
 }

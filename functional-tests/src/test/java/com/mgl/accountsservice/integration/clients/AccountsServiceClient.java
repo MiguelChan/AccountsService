@@ -6,6 +6,8 @@ import com.mgl.accountsservice.dto.DeleteAccountRequest;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
 import com.mgl.accountsservice.dto.DeleteSubAccountRequest;
 import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
+import com.mgl.accountsservice.dto.GetAccountByIdRequest;
+import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
@@ -76,5 +78,16 @@ public interface AccountsServiceClient {
      * @throws Exception .
      */
     DeleteSubAccountResponse deleteSubAccount(DeleteSubAccountRequest request) throws Exception;
+
+    /**
+     * Gets an {@link com.mgl.accountsservice.models.Account} by its Id.
+     *
+     * @param request .
+     *
+     * @return .
+     *
+     * @throws Exception .
+     */
+    GetAccountByIdResponse getAccount(GetAccountByIdRequest request) throws Exception;
 
 }
