@@ -10,11 +10,14 @@ import com.mgl.accountsservice.components.CreateAccountComponent;
 import com.mgl.accountsservice.components.DeleteAccountComponent;
 import com.mgl.accountsservice.components.GetAccountByIdComponent;
 import com.mgl.accountsservice.components.GetAccountsComponent;
+import com.mgl.accountsservice.components.PutAccountComponent;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
+import com.mgl.accountsservice.dto.PutAccountRequest;
+import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.models.Account;
 import io.github.benas.randombeans.api.EnhancedRandom;
@@ -42,6 +45,8 @@ public class AccountsControllerTests {
     private DeleteAccountComponent deleteAccountComponent;
     @Mock
     private GetAccountByIdComponent getAccountByIdComponent;
+    @Mock
+    private PutAccountComponent putAccountComponent;
 
     private AccountsController accountsController;
 
@@ -54,7 +59,8 @@ public class AccountsControllerTests {
             createAccountComponent,
             getAccountsComponent,
             deleteAccountComponent,
-            getAccountByIdComponent
+            getAccountByIdComponent,
+            putAccountComponent
         );
     }
 
@@ -207,6 +213,44 @@ public class AccountsControllerTests {
 
         assertThat(response.isSuccess()).isFalse();
         assertThat(response.getMessage()).isEqualTo(expectedErrorMessage);
+    }
+
+    @Test
+    public void putAccount_should_put() {
+        String updatingUser = EnhancedRandom.random(String.class);
+        Account accountToUpdate = EnhancedRandom.random(Account.class);
+        when(putAccountComponent.putAccount(accountToUpdate, updatingUser))
+            .thenReturn(accountToUpdate);
+
+        PutAccountRequest request = PutAccountRequest.builder()
+            .updatedAccount(accountToUpdate)
+            .updatingUser(updatingUser)
+            .build();
+
+        PutAccountResponse response = accountsController.putAccount(request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.isSuccess()).isTrue();
+        assertThat(response.getUpdatedAccount()).isEqualTo(accountToUpdate);
+    }
+
+    @Test
+    public void putAccount_should_returnUnsuccessfulResponse_uponFailure() {
+        String errorMessage = "SomeErrorMessage";
+        RuntimeException exception = new RuntimeException(errorMessage);
+
+        when(putAccountComponent.putAccount(any(), any())).thenThrow(exception);
+
+        PutAccountRequest request = PutAccountRequest.builder()
+            .updatingUser("SomeSome")
+            .updatedAccount(Account.builder().build())
+            .build();
+
+        PutAccountResponse response = accountsController.putAccount(request);
+
+        assertThat(response).isNotNull();
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.getMessage()).isEqualTo(errorMessage);
     }
 
 }

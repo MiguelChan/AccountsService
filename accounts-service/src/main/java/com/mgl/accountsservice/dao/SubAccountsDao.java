@@ -50,4 +50,13 @@ public interface SubAccountsDao {
      */
     SubAccountEntity getSubAccount(String subAccountId) throws DatabaseException;
 
+    /**
+     * Edits a {@link SubAccountEntity}.
+     *
+     * @param subAccountEntity .
+     *
+     * @throws DatabaseException .
+     */
+    void putSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException;
+
 }

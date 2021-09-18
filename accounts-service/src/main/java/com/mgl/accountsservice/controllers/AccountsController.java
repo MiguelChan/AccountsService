@@ -4,11 +4,14 @@ import com.mgl.accountsservice.components.CreateAccountComponent;
 import com.mgl.accountsservice.components.DeleteAccountComponent;
 import com.mgl.accountsservice.components.GetAccountByIdComponent;
 import com.mgl.accountsservice.components.GetAccountsComponent;
+import com.mgl.accountsservice.components.PutAccountComponent;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
 import com.mgl.accountsservice.dto.CreateAccountResponse;
 import com.mgl.accountsservice.dto.DeleteAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
+import com.mgl.accountsservice.dto.PutAccountRequest;
+import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.models.Account;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +43,7 @@ public class AccountsController {
     private final GetAccountsComponent getAccountsComponent;
     private final DeleteAccountComponent deleteAccountComponent;
     private final GetAccountByIdComponent getAccountByIdComponent;
+    private final PutAccountComponent putAccountComponent;
 
     /**
      * .
@@ -49,11 +54,13 @@ public class AccountsController {
     public AccountsController(CreateAccountComponent createAccountComponent,
                               GetAccountsComponent getAccountsComponent,
                               DeleteAccountComponent deleteAccountComponent,
-                              GetAccountByIdComponent getAccountByIdComponent) {
+                              GetAccountByIdComponent getAccountByIdComponent,
+                              PutAccountComponent putAccountComponent) {
         this.createAccountComponent = createAccountComponent;
         this.getAccountsComponent = getAccountsComponent;
         this.deleteAccountComponent = deleteAccountComponent;
         this.getAccountByIdComponent = getAccountByIdComponent;
+        this.putAccountComponent = putAccountComponent;
     }
 
     /**
@@ -65,6 +72,7 @@ public class AccountsController {
      */
     @PostMapping("/accounts")
     public CreateAccountResponse createAccount(@RequestBody CreateAccountRequest request) {
+        log.info("Attempting to create new Account: {}", request);
         Account account = request.getAccount();
         String requestingUser = request.getRequestingUser();
         try {
@@ -156,6 +164,32 @@ public class AccountsController {
                 .build();
         } catch (Exception e) {
             return GetAccountByIdResponse.builder()
+                .success(false)
+                .message(e.getMessage())
+                .build();
+        }
+    }
+
+    /**
+     * Puts an {@link Account}.
+     *
+     * @param request .
+     *
+     * @return .
+     */
+    @PutMapping(value = "/accounts")
+    public PutAccountResponse putAccount(@RequestBody PutAccountRequest request) {
+        Account accountToUpdate = request.getUpdatedAccount();
+        String updatingUser = request.getUpdatingUser();
+
+        try {
+            Account updatedAccount = putAccountComponent.putAccount(accountToUpdate, updatingUser);
+            return PutAccountResponse.builder()
+                .success(true)
+                .updatedAccount(updatedAccount)
+                .build();
+        } catch (Exception e) {
+            return PutAccountResponse.builder()
                 .success(false)
                 .message(e.getMessage())
                 .build();

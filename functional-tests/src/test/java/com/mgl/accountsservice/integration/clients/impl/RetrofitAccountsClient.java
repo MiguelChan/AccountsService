@@ -7,11 +7,14 @@ import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
 import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
+import com.mgl.accountsservice.dto.PutAccountRequest;
+import com.mgl.accountsservice.dto.PutAccountResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 /**
@@ -82,4 +85,14 @@ public interface RetrofitAccountsClient {
      */
     @GET("accounts/{accountId}")
     Call<GetAccountByIdResponse> getAccount(@Path("accountId") String accountId);
+
+    /**
+     * .
+     *
+     * @param request .
+     *
+     * @return .
+     */
+    @PUT("accounts")
+    Call<PutAccountResponse> putAccount(@Body PutAccountRequest request);
 }

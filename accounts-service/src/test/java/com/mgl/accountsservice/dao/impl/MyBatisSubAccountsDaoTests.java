@@ -113,4 +113,22 @@ public class MyBatisSubAccountsDaoTests {
             .isInstanceOfAny(DatabaseException.class);
     }
 
+    @Test
+    public void putSubAccount_should_put() throws Exception {
+        SubAccountEntity subAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
+
+        myBatisSubAccountsDao.putSubAccount(subAccountEntity);
+
+        verify(subAccountsMapper).putSubAccount(subAccountEntity);
+    }
+
+    @Test
+    public void putSubAccount_should_bubbleUpException() throws Exception {
+        doThrow(RuntimeException.class).when(subAccountsMapper).putSubAccount(any());
+
+        SubAccountEntity subAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
+        assertThatThrownBy(() -> myBatisSubAccountsDao.putSubAccount(subAccountEntity))
+            .isInstanceOfAny(DatabaseException.class);
+    }
+
 }

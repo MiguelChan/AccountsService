@@ -77,6 +77,7 @@ public class CreateAccountComponent {
                 currentEntity.setCreatedBy(requestingUser);
                 subAccountsDao.insertSubAccount(currentEntity);
             }
+            log.info("Account created with Id: {}", accountId);
             return accountId;
         } catch (DatabaseException e) {
             log.error("An error occurred when trying to insert the Account.", e);

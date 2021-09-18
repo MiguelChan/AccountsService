@@ -61,4 +61,15 @@
         WHERE
             sa.id = #{subAccountId}
     </delete>
+
+    <update id="putSubAccount" parameterType="com.mgl.accountsservice.dao.entities.SubAccountEntity">
+        UPDATE accountsdb.sub_accounts
+        SET
+            description = #{description},
+            account_id = #{accountId},
+            created_at = NOW(),
+            last_updated_at = NOW()
+        WHERE
+            id = #{id}
+    </update>
 </mapper>

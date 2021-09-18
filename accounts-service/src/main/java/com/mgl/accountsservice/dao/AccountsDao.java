@@ -47,4 +47,13 @@ public interface AccountsDao {
      */
     void deleteAccount(String accountId) throws DatabaseException;
 
+    /**
+     * Updates (PUT) a {@link AccountEntity}.
+     *
+     * @param accountEntity .
+     *
+     * @throws DatabaseException .
+     */
+    void putAccount(AccountEntity accountEntity) throws DatabaseException;
+
 }

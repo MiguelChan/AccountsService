@@ -45,4 +45,13 @@ public interface AccountsMapper {
      */
     void deleteAccount(String accountId) throws DatabaseException;
 
+    /**
+     * .
+     *
+     * @param accountEntity .
+     *
+     * @throws DatabaseException .
+     */
+    void putAccount(AccountEntity accountEntity) throws DatabaseException;
+
 }

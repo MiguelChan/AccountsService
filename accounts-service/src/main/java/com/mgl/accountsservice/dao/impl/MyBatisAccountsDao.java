@@ -49,6 +49,7 @@ public class MyBatisAccountsDao implements AccountsDao {
         try {
             return accountsMapper.getAccounts();
         } catch (Exception e) {
+            log.info("Error while trying to Get", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
@@ -59,6 +60,7 @@ public class MyBatisAccountsDao implements AccountsDao {
         try {
             return accountsMapper.getAccount(accountId);
         } catch (Exception e) {
+            log.info("Error while trying to Get", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
@@ -69,6 +71,18 @@ public class MyBatisAccountsDao implements AccountsDao {
         try {
             accountsMapper.deleteAccount(accountId);
         } catch (Exception e) {
+            log.info("Error while trying to Delete", e);
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void putAccount(AccountEntity accountEntity) throws DatabaseException {
+        log.info("Attempting to update Account with Id: {}", accountEntity.getId());
+        try {
+            accountsMapper.putAccount(accountEntity);
+        } catch (Exception e) {
+            log.info("Error while trying to Update", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
