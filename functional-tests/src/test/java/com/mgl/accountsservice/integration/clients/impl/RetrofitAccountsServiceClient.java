@@ -11,6 +11,8 @@ import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
+import com.mgl.accountsservice.dto.PutAccountRequest;
+import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.integration.clients.AccountsServiceClient;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -67,6 +69,11 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
     public GetAccountByIdResponse getAccount(GetAccountByIdRequest request) throws Exception {
         String accountId = request.getAccountId();
         return makeCall(retrofitAccountsClient.getAccount(accountId));
+    }
+
+    @Override
+    public PutAccountResponse putAccount(PutAccountRequest request) throws Exception {
+        return makeCall(retrofitAccountsClient.putAccount(request));
     }
 
     private <T> T makeCall(Call<T> callMethod) throws Exception {

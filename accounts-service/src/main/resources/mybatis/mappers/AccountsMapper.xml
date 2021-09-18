@@ -60,4 +60,14 @@
         WHERE
             a.id = #{accountId}
     </delete>
+
+    <update id="putAccount" parameterType="com.mgl.accountsservice.dao.entities.AccountEntity">
+        UPDATE accountsdb.accounts
+        SET
+            name = #{name},
+            account_type = #{accountType},
+            last_updated_at = NOW()
+        WHERE
+            id = #{id}
+    </update>
 </mapper>

@@ -51,4 +51,13 @@ public interface SubAccountsMapper {
      */
     SubAccountEntity getSubAccount(String subAccountId) throws DatabaseException;
 
+    /**
+     * .
+     *
+     * @param subAccountEntity .
+     *
+     * @throws DatabaseException .
+     */
+    void putSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException;
+
 }

@@ -11,6 +11,8 @@ import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PingResponse;
+import com.mgl.accountsservice.dto.PutAccountRequest;
+import com.mgl.accountsservice.dto.PutAccountResponse;
 
 /**
  * Defines the AccountsService Client.
@@ -89,5 +91,19 @@ public interface AccountsServiceClient {
      * @throws Exception .
      */
     GetAccountByIdResponse getAccount(GetAccountByIdRequest request) throws Exception;
+
+    /**
+     * Puts a {@link com.mgl.accountsservice.models.Account} and its related
+     * {@link com.mgl.accountsservice.models.SubAccount}s.*
+     * This method also creates new {@link com.mgl.accountsservice.models.SubAccount} if they are
+     * supplied.
+     *
+     * @param request .
+     *
+     * @return .
+     *
+     * @throws Exception .
+     */
+    PutAccountResponse putAccount(PutAccountRequest request) throws Exception;
 
 }

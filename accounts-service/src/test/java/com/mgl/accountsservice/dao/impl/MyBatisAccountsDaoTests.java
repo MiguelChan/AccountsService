@@ -113,4 +113,21 @@ public class MyBatisAccountsDaoTests {
             .isInstanceOfAny(DatabaseException.class);
     }
 
+    @Test
+    public void putAccount_should_put() throws Exception {
+        AccountEntity accountEntity = EnhancedRandom.random(AccountEntity.class);
+
+        accountsDao.putAccount(accountEntity);
+
+        verify(accountsMapper).putAccount(accountEntity);
+    }
+
+    @Test
+    public void putAccount_should_bubbleUpExceptions() throws Exception {
+        doThrow(RuntimeException.class).when(accountsMapper).putAccount(any());
+        AccountEntity accountEntity = EnhancedRandom.random(AccountEntity.class);
+
+        assertThatThrownBy(() -> accountsDao.putAccount(accountEntity)).isInstanceOfAny(DatabaseException.class);
+    }
+
 }

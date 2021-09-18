@@ -50,6 +50,7 @@ public class MyBatisSubAccountsDao implements SubAccountsDao {
         try {
             return subAccountsMapper.getSubAccounts(accountId);
         } catch (Exception e) {
+            log.info("Error when trying to get", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
@@ -60,6 +61,7 @@ public class MyBatisSubAccountsDao implements SubAccountsDao {
         try {
             subAccountsMapper.deleteSubAccount(subAccountId);
         } catch (Exception e) {
+            log.info("Error when trying to delete", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
@@ -71,6 +73,19 @@ public class MyBatisSubAccountsDao implements SubAccountsDao {
         try {
             return subAccountsMapper.getSubAccount(subAccountId);
         } catch (Exception e) {
+            log.info("Error when trying to get", e);
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void putSubAccount(SubAccountEntity subAccountEntity) throws DatabaseException {
+        log.info("Attempting to Update SubAccount with Id: {}", subAccountEntity.getId());
+
+        try {
+            subAccountsMapper.putSubAccount(subAccountEntity);
+        } catch (Exception e) {
+            log.info("Error when trying to update", e);
             throw new DatabaseException(e.getMessage(), e);
         }
     }
