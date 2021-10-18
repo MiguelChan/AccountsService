@@ -27,3 +27,12 @@ All shared models, clients, definitions should live in here.
 
 In order to build the project just run: `./gradlew release` at the root of the repository.
 Each code-package has their own `release` task definition.
+
+### Database Setup
+
+In order to create a devo database follow the steps below:
+
+* `docker run --name custom-db -p 5432:5432 -e POSTGRES_PASSWORD=docker -d postgres:12`: Which will run an empty Database using PostgreSLQ, and will expose the port 5432.
+* Log into your favorite SQL Workbench using postgres and docker as username and passwords respectively.
+Run the commands located under `src/main/resources/db/schema/initial-setup.sql`
+* Finally run: `.gradlew flywayMigrate` so your database is up-to-date.
