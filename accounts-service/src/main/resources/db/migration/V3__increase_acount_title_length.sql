@@ -1,0 +1,1 @@
+ALTER TABLE accountsdb.accounts ALTER COLUMN name TYPE CHARACTER VARYING(100);
