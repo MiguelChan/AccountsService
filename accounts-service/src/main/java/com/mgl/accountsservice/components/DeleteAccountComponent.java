@@ -4,7 +4,6 @@ import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
-import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.Account;
@@ -47,7 +46,7 @@ public class DeleteAccountComponent {
     }
 
     /**
-     * Deletes an Account. Returns an Empty Optional if an error ocurred.
+     * Deletes an Account. Returns an empty Optional only when the account is missing.
      *
      * @param accountId .
      *
@@ -66,28 +65,24 @@ public class DeleteAccountComponent {
     }
 
     private Optional<Account> getAccount(String accountId) {
-        try {
-            AccountEntity accountEntity = accountsDao.getAccount(accountId);
-            if (accountEntity == null) {
-                return Optional.empty();
-            }
-
-            List<SubAccountEntity> subAccountEntities = subAccountsDao.getSubAccounts(accountId);
-
-            List<SubAccount> subAccounts = subAccountEntities.stream()
-                .map(subAccountsEntityMapper::fromEntity)
-                .collect(Collectors.toList());
-
-            Account account = accountsEntityMapper.fromEntity(accountEntity);
-
-            Account finalAccount = account.toBuilder()
-                .subAccounts(subAccounts)
-                .build();
-
-            return Optional.of(finalAccount);
-        } catch (DatabaseException e) {
+        AccountEntity accountEntity = accountsDao.getAccount(accountId);
+        if (accountEntity == null) {
             return Optional.empty();
         }
+
+        List<SubAccountEntity> subAccountEntities = subAccountsDao.getSubAccounts(accountId);
+
+        List<SubAccount> subAccounts = subAccountEntities.stream()
+            .map(subAccountsEntityMapper::fromEntity)
+            .collect(Collectors.toList());
+
+        Account account = accountsEntityMapper.fromEntity(accountEntity);
+
+        Account finalAccount = account.toBuilder()
+            .subAccounts(subAccounts)
+            .build();
+
+        return Optional.of(finalAccount);
     }
 
 }

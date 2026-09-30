@@ -1,6 +1,7 @@
 package com.mgl.accountsservice.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.mgl.accountsservice.dao.AccountsDao;
@@ -88,12 +89,10 @@ public class GetAccountByIdComponentTests {
     }
 
     @Test
-    public void getAccount_should_returnEmpty_when_databaseExceptionOccurs() {
+    public void getAccount_should_propagateDatabaseFailure() {
         when(accountsDao.getAccount(TEST_ACCOUNT_ID)).thenThrow(DatabaseException.class);
-
-        Optional<Account> foundAccountOpt = component.getAccount(TEST_ACCOUNT_ID);
-
-        assertThat(foundAccountOpt.isEmpty()).isTrue();
+        assertThatThrownBy(() -> component.getAccount(TEST_ACCOUNT_ID))
+            .isInstanceOf(DatabaseException.class);
     }
 
 }

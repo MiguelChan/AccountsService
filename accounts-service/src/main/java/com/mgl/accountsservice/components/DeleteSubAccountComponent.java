@@ -2,7 +2,6 @@ package com.mgl.accountsservice.components;
 
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
-import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.SubAccount;
 import java.util.Optional;
@@ -56,14 +55,12 @@ public class DeleteSubAccountComponent {
 
     private Optional<SubAccount> getSubAccount(String subAccountId) {
         log.info("Attempting to fetch SubAccount with Id: {}", subAccountId);
-        try {
-            SubAccountEntity subAccountEntity = subAccountsDao.getSubAccount(subAccountId);
-            SubAccount foundSubAccount = subAccountsEntityMapper.fromEntity(subAccountEntity);
-            return Optional.of(foundSubAccount);
-        } catch (DatabaseException e) {
-            log.info("Exception found when trying to fetch SubAccount. ", e);
+        SubAccountEntity subAccountEntity = subAccountsDao.getSubAccount(subAccountId);
+        if (subAccountEntity == null) {
             return Optional.empty();
         }
+        SubAccount foundSubAccount = subAccountsEntityMapper.fromEntity(subAccountEntity);
+        return Optional.of(foundSubAccount);
     }
 
 }

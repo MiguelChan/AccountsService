@@ -1,5 +1,6 @@
 package com.mgl.accountsservice.components;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -89,12 +90,10 @@ public class DeleteAccountComponentTests {
     }
 
     @Test
-    public void deleteAccount_should_returnEmpty_when_anErrorOccurs() {
+    public void deleteAccount_should_propagateDatabaseFailure() {
         when(accountsDao.getAccount(TEST_ACCOUNT_ID)).thenThrow(DatabaseException.class);
-
-        Optional<Account> deletedAccount = component.deleteAccount(TEST_ACCOUNT_ID);
-
-        assertThat(deletedAccount.isEmpty()).isTrue();
+        assertThatThrownBy(() -> component.deleteAccount(TEST_ACCOUNT_ID))
+            .isInstanceOf(DatabaseException.class);
     }
 
 }

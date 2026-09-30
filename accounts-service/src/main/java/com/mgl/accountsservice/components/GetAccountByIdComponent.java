@@ -4,7 +4,6 @@ import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
-import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.Account;
@@ -58,30 +57,23 @@ public class GetAccountByIdComponent {
      * @return .
      */
     public Optional<Account> getAccount(String accountId) {
-        try {
-            AccountEntity accountEntity = accountsDao.getAccount(accountId);
-            if (accountEntity == null) {
-                return Optional.empty();
-            }
-
-            List<SubAccountEntity> subAccountEntities = subAccountsDao.getSubAccounts(accountId);
-            List<SubAccount> subAccounts = subAccountEntities.stream()
-                .map(subAccountsEntityMapper::fromEntity)
-                .collect(Collectors.toList());
-
-            Account foundAccount = accountsEntityMapper.fromEntity(accountEntity);
-
-            Account finalAccount = foundAccount.toBuilder()
-                .subAccounts(subAccounts)
-                .build();
-
-            return Optional.of(finalAccount);
-        } catch (DatabaseException databaseException) {
-            log.error("An error occurred when trying to fetch AccountId",
-                databaseException
-            );
+        AccountEntity accountEntity = accountsDao.getAccount(accountId);
+        if (accountEntity == null) {
             return Optional.empty();
         }
+
+        List<SubAccountEntity> subAccountEntities = subAccountsDao.getSubAccounts(accountId);
+        List<SubAccount> subAccounts = subAccountEntities.stream()
+            .map(subAccountsEntityMapper::fromEntity)
+            .collect(Collectors.toList());
+
+        Account foundAccount = accountsEntityMapper.fromEntity(accountEntity);
+
+        Account finalAccount = foundAccount.toBuilder()
+            .subAccounts(subAccounts)
+            .build();
+
+        return Optional.of(finalAccount);
     }
 
 }
