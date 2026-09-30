@@ -32,6 +32,14 @@ public interface SubAccountsMapper {
     List<SubAccountEntity> getSubAccounts(String accountId) throws DatabaseException;
 
     /**
+     * Retrieves children for a batch of account IDs.
+     *
+     * @param accountIds account IDs to query
+     * @return matching children
+     */
+    List<SubAccountEntity> getSubAccountsForAccounts(List<String> accountIds) throws DatabaseException;
+
+    /**
      * .
      *
      * @param subAccountId .

@@ -131,4 +131,22 @@ public class MyBatisSubAccountsDaoTests {
             .isInstanceOfAny(DatabaseException.class);
     }
 
+    @Test
+    public void batchRead_should_returnMappedRows() {
+        List<String> ids = List.of("a", "b");
+        List<SubAccountEntity> rows = List.of(SubAccountEntity.builder().id("s").accountId("a").build());
+        when(subAccountsMapper.getSubAccountsForAccounts(ids)).thenReturn(rows);
+        assertThat(myBatisSubAccountsDao.getSubAccountsForAccounts(ids)).isSameAs(rows);
+    }
+
+    @Test
+    public void batchRead_should_skipEmptyAndWrapMapperFailures() {
+        assertThat(myBatisSubAccountsDao.getSubAccountsForAccounts(List.of())).isEqualTo(List.of());
+        org.mockito.Mockito.verifyNoInteractions(subAccountsMapper);
+        RuntimeException failure = new RuntimeException("unavailable");
+        when(subAccountsMapper.getSubAccountsForAccounts(List.of("a"))).thenThrow(failure);
+        assertThatThrownBy(() -> myBatisSubAccountsDao.getSubAccountsForAccounts(List.of("a")))
+            .isInstanceOf(DatabaseException.class).hasCause(failure);
+    }
+
 }
