@@ -43,6 +43,22 @@
             sa.account_id = #{accountId}
     </select>
 
+    <select id="getSubAccountsForAccounts" resultMap="SubAccount">
+        SELECT sa.id, sa.description, sa.account_id, sa.created_by,
+            sa.created_at, sa.last_updated_at
+        FROM accountsdb.sub_accounts AS sa
+        WHERE
+        <choose>
+            <when test="list != null and !list.isEmpty()">
+                sa.account_id IN
+                <foreach collection="list" item="accountId" open="(" separator="," close=")">
+                    #{accountId}
+                </foreach>
+            </when>
+            <otherwise>FALSE</otherwise>
+        </choose>
+    </select>
+
     <select id="getSubAccount" resultMap="SubAccount">
         SELECT
             sa.id,

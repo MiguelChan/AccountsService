@@ -3,11 +3,13 @@ package com.mgl.accountsservice.components;
 import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
+import com.mgl.accountsservice.dao.entities.SubAccountEntity;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.Account;
 import com.mgl.accountsservice.models.SubAccount;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -50,9 +52,17 @@ public class GetAccountsComponent {
      */
     public List<Account> getAccounts() {
         List<AccountEntity> accountEntities = accountsDao.getAccounts();
+        if (accountEntities.isEmpty()) {
+            return List.of();
+        }
+        List<String> accountIds = accountEntities.stream().map(AccountEntity::getId)
+            .collect(Collectors.toList());
+        Map<String, List<SubAccountEntity>> childrenByAccount = subAccountsDao
+            .getSubAccountsForAccounts(accountIds).stream()
+            .collect(Collectors.groupingBy(SubAccountEntity::getAccountId));
         return accountEntities.stream()
             .map(accountEntity -> {
-                List<SubAccount> subAccounts = subAccountsDao.getSubAccounts(accountEntity.getId())
+                List<SubAccount> subAccounts = childrenByAccount.getOrDefault(accountEntity.getId(), List.of())
                     .stream()
                     .map(subAccountsEntityMapper::fromEntity)
                     .collect(Collectors.toList());

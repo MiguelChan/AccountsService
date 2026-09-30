@@ -2,7 +2,11 @@ package com.mgl.accountsservice.components;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -71,10 +75,11 @@ public class GetAccountsComponentTests {
 
         // 2.- SubAccount setup
         SubAccountEntity subAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
+        subAccountEntity.setAccountId(accountId);
         SubAccount expectedSubAccount = EnhancedRandom.random(SubAccount.class);
 
         when(subAccountsEntityMapper.fromEntity(subAccountEntity)).thenReturn(expectedSubAccount);
-        when(subAccountsDao.getSubAccounts(accountId))
+        when(subAccountsDao.getSubAccountsForAccounts(List.of(accountId)))
             .thenReturn(Lists.newArrayList(subAccountEntity));
 
         // 3.- Final object setup
@@ -111,23 +116,21 @@ public class GetAccountsComponentTests {
                 .build())
             .collect(Collectors.toList());
         when(accountsDao.getAccounts()).thenReturn(entities);
-        when(subAccountsDao.getSubAccounts(anyString())).thenAnswer(invocation -> {
-            // DAO reads must stay in the caller's execution/transaction context.
+        when(subAccountsDao.getSubAccountsForAccounts(anyList())).thenAnswer(invocation -> {
             assertThat(Thread.currentThread()).isSameAs(caller);
-            String accountId = invocation.getArgument(0);
-            if (accountId.equals("acct-0")) {
-                return List.of();
-            }
-            return List.of(SubAccountEntity.builder()
-                .id("child-" + accountId)
-                .accountId(accountId)
-                .build());
+            List<String> ids = invocation.getArgument(0);
+            return ids.stream().filter(id -> !id.equals("acct-0"))
+                .map(id -> SubAccountEntity.builder().id("child-" + id).accountId(id).build())
+                .collect(Collectors.toList());
         });
         component = new GetAccountsComponent(accountsDao, new AccountsEntityMapper(),
             subAccountsDao, new SubAccountsEntityMapper());
 
         List<Account> accounts = component.getAccounts();
 
+        verify(subAccountsDao, times(1)).getSubAccountsForAccounts(entities.stream()
+            .map(AccountEntity::getId).collect(Collectors.toList()));
+        verify(subAccountsDao, never()).getSubAccounts(anyString());
         assertThat(accounts).extracting(Account::getId)
             .containsExactlyInAnyOrderElementsOf(entities.stream()
                 .map(AccountEntity::getId).collect(Collectors.toList()));
@@ -155,7 +158,7 @@ public class GetAccountsComponentTests {
         AccountEntity entity = AccountEntity.builder().id("acct-1").build();
         DatabaseException failure = new DatabaseException("Child read failed", null);
         when(accountsDao.getAccounts()).thenReturn(List.of(entity));
-        when(subAccountsDao.getSubAccounts("acct-1")).thenThrow(failure);
+        when(subAccountsDao.getSubAccountsForAccounts(List.of("acct-1"))).thenThrow(failure);
 
         assertThatThrownBy(() -> component.getAccounts()).isSameAs(failure);
     }

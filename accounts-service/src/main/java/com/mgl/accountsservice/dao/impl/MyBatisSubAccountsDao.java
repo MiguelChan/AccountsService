@@ -56,6 +56,18 @@ public class MyBatisSubAccountsDao implements SubAccountsDao {
     }
 
     @Override
+    public List<SubAccountEntity> getSubAccountsForAccounts(List<String> accountIds) throws DatabaseException {
+        if (accountIds.isEmpty()) {
+            return List.of();
+        }
+        try {
+            return subAccountsMapper.getSubAccountsForAccounts(accountIds);
+        } catch (Exception e) {
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     public void deleteSubAccount(String subAccountId) throws DatabaseException {
         log.info("Attempting to delete SubAccount with Id: {}", subAccountId);
         try {
