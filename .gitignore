@@ -482,3 +482,7 @@ obj/
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/gradle,intellij,java,maven,macos,windows,android,androidstudio,vim,emacs
+# Local database credentials
+.env
+.env.*
+!.env.example

@@ -62,3 +62,24 @@ bash gradlew :accounts-service:test --no-daemon --max-workers=1
 Without the URL, database tests are skipped. The test creates `accountsdb` inside
 an uncommitted transaction and rolls it back when the session closes. It fails if
 that schema already exists; never point it at a shared or production database.
+
+## Database configuration
+
+Provide application connection values through `JDBC_DATABASE_URL` (JDBC URL),
+`JDBC_DATABASE_USERNAME`, and `JDBC_DATABASE_PASSWORD` in both dev and prod profiles.
+Provide migrations with `FLYWAY_URL`, `FLYWAY_USER`, and `FLYWAY_PASSWORD`.
+For example, after supplying those variables in your shell or secret manager:
+
+```sh
+bash gradlew :accounts-service:flywayMigrate --no-daemon
+```
+
+Keep deployment values out of tracked files and command history. Local `.env`
+files are ignored, but are not loaded automatically by Gradle or Spring.
+The bootstrap SQL under `db/schema/initial-setup.sql` contains example local roles;
+use dedicated deployment users with credentials managed outside the repository.
+
+Remote credentials previously committed in Gradle must be revoked or rotated by
+the database owner. Removing them from the current tree does not remove historical
+copies. Check provider access logs and decide whether coordinated history cleanup
+is needed; this change does not rewrite Git history.
