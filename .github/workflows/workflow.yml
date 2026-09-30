@@ -43,13 +43,19 @@ jobs:
           architecture: x64
       - name: Run release script
         run: ./gradlew release -Pskip-functional-tests --no-daemon --max-workers=1
-      - name: Verify PostgreSQL regression executed
+      - name: Verify PostgreSQL regressions executed
         run: |
           python3 - <<'PY'
           import xml.etree.ElementTree as ET
-          path = 'accounts-service/build/test-results/test/TEST-com.mgl.accountsservice.dao.mappers.SubAccountsMapperDatabaseTests.xml'
-          result = ET.parse(path).getroot()
-          counts = {key: int(result.get(key, '0')) for key in ('tests', 'failures', 'errors', 'skipped')}
-          print('PostgreSQL mapper regression:', counts)
-          assert counts['tests'] > 0 and all(counts[key] == 0 for key in ('failures', 'errors', 'skipped')), counts
+          from pathlib import Path
+          sources = Path('accounts-service/src/test/java')
+          database_tests = sorted(sources.rglob('*DatabaseTests.java'))
+          assert database_tests, 'No PostgreSQL regression classes found'
+          for source in database_tests:
+              name = '.'.join(source.relative_to(sources).with_suffix('').parts)
+              path = Path('accounts-service/build/test-results/test') / ('TEST-' + name + '.xml')
+              result = ET.parse(path).getroot()
+              counts = {key: int(result.get(key, '0')) for key in ('tests', 'failures', 'errors', 'skipped')}
+              print('PostgreSQL regression:', name, counts)
+              assert counts['tests'] > 0 and all(counts[key] == 0 for key in ('failures', 'errors', 'skipped')), (name, counts)
           PY
