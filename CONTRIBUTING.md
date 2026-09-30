@@ -48,3 +48,17 @@ git config --local commit.template "$(git rev-parse --show-toplevel)/.gitmessage
 
 This is optional, local configuration. Git does not automatically activate a tracked
 commit template. Commands using `git commit -m` must follow the format explicitly.
+
+## PostgreSQL mapper tests
+
+The mapper test runs against a disposable PostgreSQL database. Supply
+`ACCOUNTS_TEST_DB_URL` (JDBC URL), `ACCOUNTS_TEST_DB_USER`, and
+`ACCOUNTS_TEST_DB_PASSWORD` for a dedicated, empty test database, then run:
+
+```sh
+bash gradlew :accounts-service:test --no-daemon --max-workers=1
+```
+
+Without the URL, database tests are skipped. The test creates `accountsdb` inside
+an uncommitted transaction and rolls it back when the session closes. It fails if
+that schema already exists; never point it at a shared or production database.

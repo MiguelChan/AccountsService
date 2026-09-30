@@ -67,7 +67,6 @@
         SET
             description = #{description},
             account_id = #{accountId},
-            created_at = NOW(),
             last_updated_at = NOW()
         WHERE
             id = #{id}
