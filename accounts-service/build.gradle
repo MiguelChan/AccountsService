@@ -73,20 +73,9 @@ tasks.register('copyJar', Copy) {
 tasks.getByName('copyJar').outputs.upToDateWhen { false }
 
 flyway {
-//  Dev Config
-    url = 'jdbc:postgresql://localhost:5432/postgres'
-    user = 'flyway_user'
-    password = 'flyway-user-password'
-
-//  Beta Config
-//    url = 'jdbc:postgresql://ec2-23-21-4-7.compute-1.amazonaws.com:5432/dabqivmifr0nba'
-//    user = 'pbtmstnzrfdqho'
-//    password = '1ec263f388c068aef27f7a2b47470f8804c307fd42f116444ac549e4d57702b1'
-
-//  Prod Config
-//    url = 'jdbc:postgresql://ec2-23-21-4-7.compute-1.amazonaws.com:5432/d3k455lqh89ur8'
-//    user = 'lnifendicvhlnd'
-//    password = 'f90d660dd43b2c64164f822979ce86361c506d2290f52139d4b19f1089bef044'
+    url = System.getenv('FLYWAY_URL')
+    user = System.getenv('FLYWAY_USER')
+    password = System.getenv('FLYWAY_PASSWORD')
 
     schemas = ['accountsdb']
 }
