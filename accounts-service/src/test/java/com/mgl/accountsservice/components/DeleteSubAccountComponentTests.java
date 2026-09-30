@@ -60,7 +60,7 @@ public class DeleteSubAccountComponentTests {
 
     @Test
     public void deleteSubAccount_should_returnEmpty_when_subAccountDoesNotExist() {
-        when(subAccountsDao.getSubAccount(TEST_SUB_ACCOUNT_ID)).thenThrow(DatabaseException.class);
+        when(subAccountsDao.getSubAccount(TEST_SUB_ACCOUNT_ID)).thenReturn(null);
 
         Optional<SubAccount> foundSubAccount = component.deleteSubAccount(TEST_SUB_ACCOUNT_ID);
 
