@@ -4,6 +4,7 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertNotNull;
 import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
 import com.beust.jcommander.internal.Lists;
 import com.mgl.accountsservice.dto.CreateAccountRequest;
@@ -16,6 +17,7 @@ import com.mgl.accountsservice.dto.GetAccountsRequest;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PutAccountRequest;
 import com.mgl.accountsservice.dto.PutAccountResponse;
+import com.mgl.accountsservice.integration.clients.HttpStatusException;
 import com.mgl.accountsservice.models.Account;
 import com.mgl.accountsservice.models.AccountType;
 import com.mgl.accountsservice.models.SubAccount;
@@ -45,6 +47,7 @@ public class WorkflowTests extends BaseTests {
 
         CreateAccountRequest createRequest = CreateAccountRequest.builder()
             .account(account)
+            .requestingUser(TEST_USER)
             .build();
 
         CreateAccountResponse response = this.serviceClient.createAccount(createRequest);
@@ -154,9 +157,12 @@ public class WorkflowTests extends BaseTests {
             .accountId(accountId)
             .build();
 
-        GetAccountByIdResponse getByResponse = this.serviceClient.getAccount(getRequest);
-        assertNotNull(getByResponse);
-        assertFalse(getByResponse.isSuccess());
+        try {
+            this.serviceClient.getAccount(getRequest);
+            fail("Deleted account must return HTTP 404");
+        } catch (HttpStatusException error) {
+            assertEquals(404, error.getStatusCode());
+        }
     }
 
     private Account getAccount(String accountId) throws Exception {

@@ -110,3 +110,20 @@ starting the application does not run schema changes.
 SecurityFilterChain preserves anonymous API access, disabled CSRF for the existing
 API, MVC CORS handling and the existing proxy HTTPS requirement. This migration
 does not introduce authentication or broaden allowed cross-origin access.
+
+## HTTP contract
+
+Creation returns 201; successful reads, edits and deletes return 200 with the
+existing success payload. Missing accounts/children (including PUT) return 404.
+Invalid or malformed requests return 400; unsupported media types/methods return
+415/405. Database and unexpected server failures return 500. Errors use
+`{"success":false,"code":"NOT_FOUND","message":"Account not found"}`;
+500 responses contain safe messages, never SQL/connection exception details.
+This intentionally changes the old always-200 failure contract: clients must
+check status before parsing successful responses. The functional client throws
+HttpStatusException with the actual status for non-2xx responses.
+
+POST/PUT require the user, title, accountType and subAccounts (an empty list is
+valid); children require descriptions. PUT also requires the account ID and
+nonblank unique child IDs when updating existing children. Null/blank inputs
+are rejected before transactional writes.

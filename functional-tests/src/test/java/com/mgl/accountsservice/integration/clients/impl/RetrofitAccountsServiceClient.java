@@ -14,6 +14,8 @@ import com.mgl.accountsservice.dto.PingResponse;
 import com.mgl.accountsservice.dto.PutAccountRequest;
 import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.integration.clients.AccountsServiceClient;
+import com.mgl.accountsservice.integration.clients.HttpStatusException;
+import java.io.IOException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import retrofit2.Call;
@@ -78,6 +80,13 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
 
     private <T> T makeCall(Call<T> callMethod) throws Exception {
         Response<T> callResponse = callMethod.execute();
+        if (!callResponse.isSuccessful()) {
+            String body = callResponse.errorBody() == null ? "" : callResponse.errorBody().string();
+            throw new HttpStatusException(callResponse.code(), body);
+        }
+        if (callResponse.body() == null) {
+            throw new IOException("Empty successful HTTP response");
+        }
         return callResponse.body();
     }
 

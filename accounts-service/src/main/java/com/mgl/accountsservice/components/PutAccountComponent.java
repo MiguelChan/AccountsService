@@ -4,6 +4,7 @@ import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
+import com.mgl.accountsservice.exceptions.ResourceNotFoundException;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.Account;
@@ -61,6 +62,9 @@ public class PutAccountComponent {
     @Transactional
     public Account putAccount(Account newAccount, String updatingUser) {
         validateAccount(newAccount);
+        if (accountsDao.getAccount(newAccount.getId()) == null) {
+            throw new ResourceNotFoundException("Account not found");
+        }
 
         List<SubAccountEntity> existingSubAccounts =
             getSubAccounts(newAccount, (subAccount -> subAccount.getId() != null));

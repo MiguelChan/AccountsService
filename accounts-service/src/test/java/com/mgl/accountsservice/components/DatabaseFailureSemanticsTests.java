@@ -9,8 +9,10 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mgl.accountsservice.controllers.AccountsController;
+import com.mgl.accountsservice.controllers.ApiExceptionHandler;
 import com.mgl.accountsservice.controllers.SubAccountsController;
 import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
@@ -40,14 +42,14 @@ public class DatabaseFailureSemanticsTests {
     private MockMvc http() {
         return MockMvcBuilders.standaloneSetup(new AccountsController(
             mock(CreateAccountComponent.class), mock(GetAccountsComponent.class), deleteAccount,
-            getAccount, mock(PutAccountComponent.class)), new SubAccountsController(deleteChild)).build();
+            getAccount, mock(PutAccountComponent.class)), new SubAccountsController(deleteChild)).setControllerAdvice(new ApiExceptionHandler()).build();
     }
 
     @Test
     public void missingRows_should_returnNotFoundWithoutDeleting() throws Exception {
-        http().perform(get("/accounts/a")).andExpect(jsonPath("$.message").value("AccountId not found"));
-        http().perform(delete("/accounts/a")).andExpect(jsonPath("$.message").value("AccountId not found"));
-        http().perform(delete("/subAccounts/s")).andExpect(jsonPath("$.message").value("SubAccount not found"));
+        http().perform(get("/accounts/a")).andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("Account not found"));
+        http().perform(delete("/accounts/a")).andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("Account not found"));
+        http().perform(delete("/subAccounts/s")).andExpect(status().isNotFound()).andExpect(jsonPath("$.message").value("SubAccount not found"));
         verify(accounts, never()).deleteAccount("a");
         verify(children, never()).deleteSubAccount("s");
     }
@@ -56,9 +58,9 @@ public class DatabaseFailureSemanticsTests {
     public void lookupFailures_should_reachControllerErrorPathWithoutDeleting() throws Exception {
         when(accounts.getAccount("a")).thenThrow(failure);
         when(children.getSubAccount("s")).thenThrow(failure);
-        http().perform(get("/accounts/a")).andExpect(jsonPath("$.message").value("database unavailable"));
-        http().perform(delete("/accounts/a")).andExpect(jsonPath("$.message").value("database unavailable"));
-        http().perform(delete("/subAccounts/s")).andExpect(jsonPath("$.message").value("database unavailable"));
+        http().perform(get("/accounts/a")).andExpect(status().isInternalServerError()).andExpect(jsonPath("$.message").value("Storage operation failed"));
+        http().perform(delete("/accounts/a")).andExpect(status().isInternalServerError()).andExpect(jsonPath("$.message").value("Storage operation failed"));
+        http().perform(delete("/subAccounts/s")).andExpect(status().isInternalServerError()).andExpect(jsonPath("$.message").value("Storage operation failed"));
         assertThatThrownBy(() -> deleteChild.deleteSubAccount("s")).isSameAs(failure);
         verify(accounts, never()).deleteAccount("a");
         verify(children, never()).deleteSubAccount("s");
@@ -80,9 +82,9 @@ public class DatabaseFailureSemanticsTests {
         when(children.getSubAccount("s")).thenReturn(SubAccountEntity.builder().id("s").build());
         doThrow(failure).when(accounts).deleteAccount("a");
         doThrow(failure).when(children).deleteSubAccount("s");
-        http().perform(delete("/accounts/a")).andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("database unavailable"));
-        http().perform(delete("/subAccounts/s")).andExpect(jsonPath("$.success").value(false))
-            .andExpect(jsonPath("$.message").value("database unavailable"));
+        http().perform(delete("/accounts/a")).andExpect(status().isInternalServerError()).andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.message").value("Storage operation failed"));
+        http().perform(delete("/subAccounts/s")).andExpect(status().isInternalServerError()).andExpect(jsonPath("$.success").value(false))
+            .andExpect(jsonPath("$.message").value("Storage operation failed"));
     }
 }
