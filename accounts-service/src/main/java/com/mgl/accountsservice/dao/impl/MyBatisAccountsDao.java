@@ -44,10 +44,10 @@ public class MyBatisAccountsDao implements AccountsDao {
     }
 
     @Override
-    public List<AccountEntity> getAccounts() throws DatabaseException {
+    public List<AccountEntity> getAccounts(int limit, int offset) throws DatabaseException {
         log.info("Attempting to retrieve all Accounts");
         try {
-            return accountsMapper.getAccounts();
+            return accountsMapper.getAccounts(limit, offset);
         } catch (Exception e) {
             log.info("Error while trying to Get", e);
             throw new DatabaseException(e.getMessage(), e);
@@ -59,6 +59,17 @@ public class MyBatisAccountsDao implements AccountsDao {
         log.info("Attempting to retrieve Account with Id: {}", accountId);
         try {
             return accountsMapper.getAccount(accountId);
+        } catch (Exception e) {
+            log.info("Error while trying to Get", e);
+            throw new DatabaseException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public AccountEntity getAccountForUpdate(String accountId) throws DatabaseException {
+        log.info("Attempting to retrieve Account with Id: {}", accountId);
+        try {
+            return accountsMapper.getAccountForUpdate(accountId);
         } catch (Exception e) {
             log.info("Error while trying to Get", e);
             throw new DatabaseException(e.getMessage(), e);

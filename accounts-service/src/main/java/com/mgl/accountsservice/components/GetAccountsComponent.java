@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Component that retrieves all the {@link Account}s with their respective
+ * Component that retrieves a page of {@link Account}s with their respective
  * {@link com.mgl.accountsservice.models.SubAccount}.
  */
 @Component
@@ -45,13 +45,18 @@ public class GetAccountsComponent {
     }
 
     /**
-     * Retrieves all the {@link Account} with their corresponding {@link SubAccount}s from the
+     * Retrieves the first 50 {@link Account}s with their corresponding {@link SubAccount}s from the
      * Storage Layer.
      *
      * @return A List of {@link Account}.
      */
     public List<Account> getAccounts() {
-        List<AccountEntity> accountEntities = accountsDao.getAccounts();
+        return getAccounts(50, 0);
+    }
+
+    /** Retrieves a page with a single batched child query. */
+    public List<Account> getAccounts(int limit, int offset) {
+        List<AccountEntity> accountEntities = accountsDao.getAccounts(limit, offset);
         if (accountEntities.isEmpty()) {
             return List.of();
         }

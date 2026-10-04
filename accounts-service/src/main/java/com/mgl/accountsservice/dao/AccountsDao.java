@@ -19,13 +19,18 @@ public interface AccountsDao {
     String insertAccount(AccountEntity accountEntity) throws DatabaseException;
 
     /**
-     * Gets all the {@link AccountEntity}s from the Database.
+     * Gets the first 50 {@link AccountEntity}s from the Database.
      *
      * @return .
      *
      * @throws DatabaseException .
      */
-    List<AccountEntity> getAccounts() throws DatabaseException;
+    default List<AccountEntity> getAccounts() throws DatabaseException {
+        return getAccounts(50, 0);
+    }
+
+    /** Retrieves a bounded, ordered page. */
+    List<AccountEntity> getAccounts(int limit, int offset) throws DatabaseException;
 
     /**
      * Gets an {@link AccountEntity} based off its Id.
@@ -37,6 +42,9 @@ public interface AccountsDao {
      * @throws DatabaseException .
      */
     AccountEntity getAccount(String accountId) throws DatabaseException;
+
+    /** Locks a parent row while validating and updating its children. */
+    AccountEntity getAccountForUpdate(String accountId) throws DatabaseException;
 
     /**
      * Deletes a {@link AccountEntity} based off its id.

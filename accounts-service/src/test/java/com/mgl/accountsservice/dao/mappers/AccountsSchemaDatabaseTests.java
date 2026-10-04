@@ -31,12 +31,18 @@ public class AccountsSchemaDatabaseTests {
             try (Statement statement = connection.createStatement()) {
                 statement.execute("CREATE SCHEMA accountsdb");
                 String[] files = migrations ? new String[] {"migration/V1__initial_setup.sql",
-                    "migration/V2__add_auditable_fields.sql", "migration/V3__increase_acount_title_length.sql"}
+                    "migration/V2__add_auditable_fields.sql", "migration/V3__increase_acount_title_length.sql",
+                    "migration/V4__add_account_listing_index.sql"}
                     : new String[] {"schema/accounts.sql"};
                 for (String file : files) {
                     try (InputStream input = getClass().getClassLoader().getResourceAsStream("db/" + file)) {
                         statement.execute(new String(input.readAllBytes(), StandardCharsets.UTF_8));
                     }
+                }
+                try (ResultSet rows = statement.executeQuery("SELECT indexdef FROM pg_indexes WHERE "
+                    + "schemaname = 'accountsdb' AND indexname = 'accounts_listing_order_idx'")) {
+                    assertThat(rows.next()).isTrue();
+                    assertThat(rows.getString(1)).contains("created_at DESC NULLS LAST", "id");
                 }
                 statement.execute("INSERT INTO accountsdb.accounts (id, name, account_type) "
                     + "VALUES ('a', '" + "x".repeat(100) + "', 'Capital')");

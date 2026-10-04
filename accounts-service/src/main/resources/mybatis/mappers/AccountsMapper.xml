@@ -40,6 +40,8 @@
             a.created_at,
             a.last_updated_at
         FROM accountsdb.accounts AS a
+        ORDER BY a.created_at DESC NULLS LAST, a.id ASC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
     <select id="getAccount" resultMap="Account">
@@ -53,6 +55,20 @@
         FROM accountsdb.accounts AS a
         WHERE
             a.id = #{accountId}
+    </select>
+
+    <select id="getAccountForUpdate" resultMap="Account">
+        SELECT
+            a.id,
+            a.name,
+            a.account_type,
+            a.created_by,
+            a.created_at,
+            a.last_updated_at
+        FROM accountsdb.accounts AS a
+        WHERE
+            a.id = #{accountId}
+        FOR UPDATE
     </select>
 
     <delete id="deleteAccount" parameterType="string">

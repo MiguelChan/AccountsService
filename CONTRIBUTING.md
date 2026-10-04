@@ -127,3 +127,23 @@ POST/PUT require the user, title, accountType and subAccounts (an empty list is
 valid); children require descriptions. PUT also requires the account ID and
 nonblank unique child IDs when updating existing children. Null/blank inputs
 are rejected before transactional writes.
+
+## Account pages and input bounds
+
+`GET /api/accounts?limit=50&offset=0` returns `accounts`, `limit`, `offset` and
+`hasMore`. The default is 50, the maximum 100; offset is 0..100000. Invalid or
+nonnumeric bounds return 400. Fetch the next page with offset plus limit when
+hasMore is true. Ordering is created_at descending (nulls last), then ID ascending;
+V4 adds the matching index and the bootstrap schema includes it too. A page reads
+at most limit+1 parents for lookahead and performs one batched child query.
+The no-argument component/DAO convenience methods now return the first 50.
+This changes the former all-accounts response; callers needing all rows must page.
+Offset pages are deterministic for an unchanged dataset, not a snapshot across
+concurrent insertions/deletions. Child rows are ordered by their IDs.
+
+Titles/descriptions are limited to 100 Unicode characters, user names to 30 and
+update IDs to 20, matching PostgreSQL column sizes. Each write accepts at most
+100 children and PUT cannot grow an account past 100 children or reassign children
+from another account. PUT locks the parent row before reading children, so concurrent
+additions cannot race past the cumulative limit. The JSON collection limit is checked after deserialization;
+this is not a raw HTTP payload byte limit.

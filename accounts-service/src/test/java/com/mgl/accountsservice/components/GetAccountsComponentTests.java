@@ -71,7 +71,7 @@ public class GetAccountsComponentTests {
 
         Account randomAccount = EnhancedRandom.random(Account.class, "subAccounts");
         when(accountsEntityMapper.fromEntity(accountEntity)).thenReturn(randomAccount);
-        when(accountsDao.getAccounts()).thenReturn(Lists.newArrayList(accountEntity));
+        when(accountsDao.getAccounts(50, 0)).thenReturn(Lists.newArrayList(accountEntity));
 
         // 2.- SubAccount setup
         SubAccountEntity subAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
@@ -100,7 +100,7 @@ public class GetAccountsComponentTests {
 
     @Test
     public void getAccounts_should_bubbleUpException() {
-        when(accountsDao.getAccounts()).thenThrow(DatabaseException.class);
+        when(accountsDao.getAccounts(50, 0)).thenThrow(DatabaseException.class);
 
         assertThatThrownBy(() -> component.getAccounts()).isInstanceOfAny(DatabaseException.class);
     }
@@ -115,7 +115,7 @@ public class GetAccountsComponentTests {
                 .accountType("Capital")
                 .build())
             .collect(Collectors.toList());
-        when(accountsDao.getAccounts()).thenReturn(entities);
+        when(accountsDao.getAccounts(50, 0)).thenReturn(entities);
         when(subAccountsDao.getSubAccountsForAccounts(anyList())).thenAnswer(invocation -> {
             assertThat(Thread.currentThread()).isSameAs(caller);
             List<String> ids = invocation.getArgument(0);
@@ -146,7 +146,7 @@ public class GetAccountsComponentTests {
 
     @Test
     public void getAccounts_should_notReadChildrenWhenEmpty() {
-        when(accountsDao.getAccounts()).thenReturn(List.of());
+        when(accountsDao.getAccounts(50, 0)).thenReturn(List.of());
 
         assertThat(component.getAccounts()).isEmpty();
 
@@ -157,7 +157,7 @@ public class GetAccountsComponentTests {
     public void getAccounts_should_propagateChildReadFailure() {
         AccountEntity entity = AccountEntity.builder().id("acct-1").build();
         DatabaseException failure = new DatabaseException("Child read failed", null);
-        when(accountsDao.getAccounts()).thenReturn(List.of(entity));
+        when(accountsDao.getAccounts(50, 0)).thenReturn(List.of(entity));
         when(subAccountsDao.getSubAccountsForAccounts(List.of("acct-1"))).thenThrow(failure);
 
         assertThatThrownBy(() -> component.getAccounts()).isSameAs(failure);

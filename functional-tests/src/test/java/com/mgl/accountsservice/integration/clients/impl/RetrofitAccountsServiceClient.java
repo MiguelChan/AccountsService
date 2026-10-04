@@ -51,7 +51,7 @@ public class RetrofitAccountsServiceClient implements AccountsServiceClient {
 
     @Override
     public GetAccountsResponse getAccounts(GetAccountsRequest request) throws Exception {
-        return makeCall(retrofitAccountsClient.getAccounts());
+        return makeCall(retrofitAccountsClient.getAccounts(request.getLimit(), request.getOffset()));
     }
 
     @Override

@@ -88,6 +88,13 @@ public class AccountListingDatabaseTests {
                     assertThat(account.getSubAccounts()).extracting(child -> child.getId())
                         .containsExactlyInAnyOrderElementsOf(expectedIds);
                 }
+                counter.reads = 0;
+                assertThat(component.getAccounts(1, 0)).extracting(Account::getId).containsExactly("a");
+                assertThat(counter.reads).isEqualTo(2);
+                assertThat(component.getAccounts(1, 1)).extracting(Account::getId).containsExactly("b");
+                assertThat(component.getAccounts(1, 2)).extracting(Account::getId).containsExactly("c");
+                assertThat(component.getAccounts(1, 3)).isEmpty();
+                assertThat(component.getAccounts(1, 0)).extracting(Account::getId).containsExactly("a");
                 SubAccountsMapper mapper = session.getMapper(SubAccountsMapper.class);
                 assertThat(mapper.getSubAccountsForAccounts(List.of("b"))).extracting(row -> row.getId()).containsExactly("s3");
                 assertThat(mapper.getSubAccountsForAccounts(List.of())).isEmpty();

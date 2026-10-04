@@ -6,3 +6,4 @@ create table accountsdb.accounts (
     created_at timestamp without time zone,
     last_updated_at timestamp without time zone
 );
+CREATE INDEX accounts_listing_order_idx ON accountsdb.accounts (created_at DESC NULLS LAST, id ASC);
