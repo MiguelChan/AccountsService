@@ -83,3 +83,13 @@ Remote credentials previously committed in Gradle must be revoked or rotated by
 the database owner. Removing them from the current tree does not remove historical
 copies. Check provider access logs and decide whether coordinated history cleanup
 is needed; this change does not rewrite Git history.
+
+## Isolated HTTP regression suite
+
+With Docker and the configured JDK available, run `python3 scripts/test-http.py`.
+It creates an isolated PostgreSQL container, applies migrations, builds and starts
+the packaged app on loopback with an ephemeral port, runs the functional suite and
+a deterministic CRUD workflow, then stops the app and removes the container even
+on failure. It does not connect to the database specified in your normal shell.
+`ACCOUNTS_SERVICE_BASE_URL` lets the functional client target this instance.
+The CI workflow runs this suite for every PR, including intermediate stack bases.

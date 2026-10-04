@@ -16,7 +16,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class ClientModule extends AbstractModule {
 
-    private static final String BASE_URL = "http://localhost:8091/api/";
+    private static final String BASE_URL = System.getenv().getOrDefault(
+        "ACCOUNTS_SERVICE_BASE_URL", "http://localhost:8091/api/");
 
     /**
      * .
