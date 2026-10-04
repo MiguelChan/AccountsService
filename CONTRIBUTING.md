@@ -93,3 +93,10 @@ a deterministic CRUD workflow, then stops the app and removes the container even
 on failure. It does not connect to the database specified in your normal shell.
 `ACCOUNTS_SERVICE_BASE_URL` lets the functional client target this instance.
 The CI workflow runs this suite for every PR, including intermediate stack bases.
+
+## Java and Gradle
+
+Use JDK 17 and the root `./gradlew` wrapper for every module. Set `JAVA_HOME`
+to your JDK 17 installation before invoking the isolated regression harness.
+Module-local wrapper copies have been removed to keep one authoritative version.
+The Java toolchain makes local compilation and tests use the same baseline as CI.
