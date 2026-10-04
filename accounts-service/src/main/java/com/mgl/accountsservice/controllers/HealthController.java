@@ -27,8 +27,7 @@ public class HealthController {
      *
      * @return true.
      */
-    @GetMapping
-    @RequestMapping("/ping")
+    @GetMapping("/ping")
     public PingResponse ping() {
         return PingResponse.builder()
             .healthy(true)
@@ -40,8 +39,7 @@ public class HealthController {
      *
      * @return true when dependencies are healthy, false otherwise.
      */
-    @GetMapping
-    @RequestMapping("/deep_ping")
+    @GetMapping("/deep_ping")
     public PingResponse deepPing() {
         boolean isHealthy = healthDao.isHealthy();
         return PingResponse.builder()
