@@ -9,7 +9,11 @@ plugins {
 
 group = 'com.mgl'
 version = '1.0.0'
-sourceCompatibility = '11'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     compileOnly {
@@ -26,13 +30,15 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:2.2.0'
+    // Older OGNL reflects into JDK collections and fails under Java 17.
+    implementation 'org.mybatis:mybatis:3.5.19'
     implementation project(':accounts-shared-library')
 
-    compileOnly 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.projectlombok:lombok:1.18.48'
     runtimeOnly 'org.postgresql:postgresql:42.2.19'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
 
     testImplementation 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -47,6 +53,7 @@ test {
 }
 
 checkstyle {
+    toolVersion = '8.45.1'
     ignoreFailures = false
     maxWarnings = 0
 }
@@ -81,7 +88,7 @@ flyway {
 }
 
 jacoco {
-    toolVersion = '0.8.7'
+    toolVersion = '0.8.13'
     reportsDirectory.set(file("$buildDir/jacoco"))
 }
 

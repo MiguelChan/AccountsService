@@ -5,7 +5,11 @@ plugins {
 
 group 'com.mgl'
 version '1.0.0'
-sourceCompatibility = '11'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -32,6 +36,7 @@ test.onlyIf {
 test.outputs.upToDateWhen { false }
 
 checkstyle {
+    toolVersion = '8.45.1'
     ignoreFailures = false
     maxWarnings = 0
 }

@@ -6,7 +6,11 @@ plugins {
 
 group 'com.mgl'
 version '1.0.0'
-sourceCompatibility = '11'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
 
 configurations {
     compileOnly {
@@ -19,10 +23,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.20'
+    compileOnly 'org.projectlombok:lombok:1.18.48'
 
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
-    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.48'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.48'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
 
@@ -35,6 +39,7 @@ test {
 }
 
 checkstyle {
+    toolVersion = '8.45.1'
     ignoreFailures = false
     maxWarnings = 0
 }
@@ -53,7 +58,7 @@ tasks.register('release') {
 }
 
 jacoco {
-    toolVersion = '0.8.7'
+    toolVersion = '0.8.13'
     reportsDirectory.set(file("$buildDir/jacoco"))
 }
 
