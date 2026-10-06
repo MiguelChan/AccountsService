@@ -36,3 +36,10 @@ In order to create a devo database follow the steps below:
 * Log into your favorite SQL Workbench using postgres and docker as username and passwords respectively.
 Run the commands located under `src/main/resources/db/schema/initial-setup.sql`
 * Finally run: `.gradlew flywayMigrate` so your database is up-to-date.
+
+## Product design
+
+The proposed evolution into a private, collaborative financial ledger is documented
+in [Finance Ledger: initial design](docs/design/finance-ledger.md). It describes the
+current endpoints, proposed domain and permissions, compatibility boundaries, and
+small implementation phases. The ledger APIs are not implemented yet.
