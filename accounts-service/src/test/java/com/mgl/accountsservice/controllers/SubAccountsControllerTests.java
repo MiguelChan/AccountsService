@@ -1,84 +1,47 @@
 package com.mgl.accountsservice.controllers;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mgl.accountsservice.components.DeleteSubAccountComponent;
-import com.mgl.accountsservice.dto.DeleteSubAccountResponse;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.models.SubAccount;
-import io.github.benas.randombeans.api.EnhancedRandom;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/**
- * .
- */
-@ExtendWith(MockitoExtension.class)
+/** Verifies child deletion statuses through MVC. */
 public class SubAccountsControllerTests {
+    private final DeleteSubAccountComponent remove = mock(DeleteSubAccountComponent.class);
+    private MockMvc mvc;
 
-    @Mock
-    private DeleteSubAccountComponent deleteSubAccountComponent;
-
-    private SubAccountsController subAccountsController;
-
-    /**
-     * .
-     */
     @BeforeEach
-    public void setup() {
-        subAccountsController = new SubAccountsController(deleteSubAccountComponent);
+    void setup() {
+        mvc = MockMvcBuilders.standaloneSetup(new SubAccountsController(remove))
+            .setControllerAdvice(new ApiExceptionHandler()).build();
     }
 
     @Test
-    public void deleteSubAccount_should_delete() {
-        String testSubAccountId = "SomeId";
-
-        SubAccount subAccount = EnhancedRandom.random(SubAccount.class);
-
-        when(deleteSubAccountComponent.deleteSubAccount(testSubAccountId))
-            .thenReturn(Optional.of(subAccount));
-
-        DeleteSubAccountResponse response =
-            subAccountsController.deleteSubAccount(testSubAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isTrue();
-        assertThat(response.getDeletedSubAccount()).isEqualTo(subAccount);
+    void deletesExistingChild() throws Exception {
+        when(remove.deleteSubAccount("s")).thenReturn(Optional.of(SubAccount.builder().id("s").build()));
+        mvc.perform(delete("/subAccounts/s")).andExpect(status().isOk()).andExpect(jsonPath("$.success").value(true));
     }
 
     @Test
-    public void deleteSubAccount_should_returnEmptyResponse_when_errorOccurs() {
-        String testSubAccountId = "SomeSome";
-
-        when(deleteSubAccountComponent.deleteSubAccount(anyString()))
-            .thenThrow(DatabaseException.class);
-
-        DeleteSubAccountResponse response =
-            subAccountsController.deleteSubAccount(testSubAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getDeletedSubAccount()).isNull();
+    void missingChildIs404() throws Exception {
+        when(remove.deleteSubAccount("s")).thenReturn(Optional.empty());
+        mvc.perform(delete("/subAccounts/s")).andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 
     @Test
-    public void deleteSubAccount_should_returnEmptyResponse_when_nothingIsFound() {
-        String testSubAccountId = "SomeSome";
-
-        when(deleteSubAccountComponent.deleteSubAccount(anyString())).thenReturn(Optional.empty());
-
-        DeleteSubAccountResponse response =
-            subAccountsController.deleteSubAccount(testSubAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getDeletedSubAccount()).isNull();
+    void databaseFailureIs500() throws Exception {
+        when(remove.deleteSubAccount("s")).thenThrow(new DatabaseException("private db", null));
+        mvc.perform(delete("/subAccounts/s")).andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.message").value("Storage operation failed"));
     }
-
 }

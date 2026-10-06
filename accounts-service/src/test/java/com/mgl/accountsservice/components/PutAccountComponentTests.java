@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
+import com.mgl.accountsservice.exceptions.ResourceNotFoundException;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
 import com.mgl.accountsservice.models.Account;
@@ -107,6 +109,14 @@ public class PutAccountComponentTests {
         verify(subAccountsDao).putSubAccount(existingSubAccountEntity);
         verify(subAccountsDao).insertSubAccount(newSubAccountEntity);
         verify(accountsDao).putAccount(accountEntity);
+    }
+
+    @Test
+    void missingAccountMustNotMutateChildren() {
+        Account account = Account.builder().id("missing").subAccounts(List.of()).build();
+        when(accountsDao.getAccount("missing")).thenReturn(null);
+        assertThatThrownBy(() -> component.putAccount(account, TEST_USER)).isInstanceOf(ResourceNotFoundException.class);
+        verifyNoInteractions(subAccountsDao, accountsEntityMapper, subAccountsEntityMapper);
     }
 
 }

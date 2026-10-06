@@ -12,11 +12,9 @@ import com.mgl.accountsservice.dto.GetAccountByIdResponse;
 import com.mgl.accountsservice.dto.GetAccountsResponse;
 import com.mgl.accountsservice.dto.PutAccountRequest;
 import com.mgl.accountsservice.dto.PutAccountResponse;
+import com.mgl.accountsservice.exceptions.ResourceNotFoundException;
 import com.mgl.accountsservice.models.Account;
-import java.util.List;
-import java.util.Optional;
-import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,18 +23,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * The Accounts REST Controller.
- */
-@Log4j2
+/** The Accounts REST API; failures are classified by ApiExceptionHandler. */
 @RestController
-@RequestMapping(
-    value = "/",
-    consumes = MediaType.APPLICATION_JSON_VALUE,
-    produces = MediaType.APPLICATION_JSON_VALUE
-)
+@RequestMapping(value = "/", produces = MediaType.APPLICATION_JSON_VALUE)
 public class AccountsController {
 
     private final CreateAccountComponent createAccountComponent;
@@ -45,12 +37,7 @@ public class AccountsController {
     private final GetAccountByIdComponent getAccountByIdComponent;
     private final PutAccountComponent putAccountComponent;
 
-    /**
-     * .
-     *
-     * @param createAccountComponent .
-     */
-    @Autowired
+    /** Connects the HTTP layer to transactional components. */
     public AccountsController(CreateAccountComponent createAccountComponent,
                               GetAccountsComponent getAccountsComponent,
                               DeleteAccountComponent deleteAccountComponent,
@@ -63,137 +50,42 @@ public class AccountsController {
         this.putAccountComponent = putAccountComponent;
     }
 
-    /**
-     * .
-     *
-     * @param request .
-     *
-     * @return .
-     */
-    @PostMapping("/accounts")
+    /** Creates a validated account and returns HTTP 201. */
+    @PostMapping(value = "/accounts", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
     public CreateAccountResponse createAccount(@RequestBody CreateAccountRequest request) {
-        log.info("Attempting to create new Account: {}", request);
-        Account account = request.getAccount();
-        String requestingUser = request.getRequestingUser();
-        try {
-            String accountId = createAccountComponent.createAccount(account, requestingUser);
-            return CreateAccountResponse.builder()
-                .success(true)
-                .accountId(accountId)
-                .build();
-        } catch (Exception e) {
-            return CreateAccountResponse.builder()
-                .success(false)
-                .message(e.getMessage())
-                .build();
-        }
+        AccountInputValidator.validate(request.getAccount(), request.getRequestingUser(), false);
+        String accountId = createAccountComponent.createAccount(request.getAccount(), request.getRequestingUser());
+        return CreateAccountResponse.builder().success(true).accountId(accountId).build();
     }
 
-    /**
-     * .
-     *
-     * @return .
-     */
-    @GetMapping(value = "/accounts", consumes = MediaType.ALL_VALUE)
+    /** Retrieves accounts and their children. */
+    @GetMapping("/accounts")
     public GetAccountsResponse getAccounts() {
-        log.info("Attempting to fetch All the Accounts");
-        try {
-            List<Account> allAccounts = getAccountsComponent.getAccounts();
-            return GetAccountsResponse.builder()
-                .accounts(allAccounts)
-                .build();
-        } catch (Exception e) {
-            return GetAccountsResponse.builder()
-                .message(e.getMessage())
-                .build();
-        }
+        return GetAccountsResponse.builder().accounts(getAccountsComponent.getAccounts()).build();
     }
 
-    /**
-     * .
-     *
-     * @return .
-     */
-    @DeleteMapping(value = "/accounts/{accountId}", consumes = MediaType.ALL_VALUE)
+    /** Deletes an account or reports HTTP 404. */
+    @DeleteMapping("/accounts/{accountId}")
     public DeleteAccountResponse deleteAccount(@PathVariable String accountId) {
-        log.info("Attempting to Delete Account with Id: {}", accountId);
-        try {
-            Optional<Account> deletedAccount = deleteAccountComponent.deleteAccount(accountId);
-            if (deletedAccount.isPresent()) {
-                return DeleteAccountResponse.builder()
-                    .deletedAccount(deletedAccount.get())
-                    .success(true)
-                    .build();
-            }
-
-            return DeleteAccountResponse.builder()
-                .success(false)
-                .message("AccountId not found")
-                .build();
-        } catch (Exception e) {
-            return DeleteAccountResponse.builder()
-                .success(false)
-                .message(e.getMessage())
-                .build();
-        }
+        Account account = deleteAccountComponent.deleteAccount(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        return DeleteAccountResponse.builder().deletedAccount(account).success(true).build();
     }
 
-    /**
-     * .
-     *
-     * @param accountId .
-     *
-     * @return .
-     */
-    @GetMapping(value = "/accounts/{accountId}", consumes = MediaType.ALL_VALUE)
+    /** Retrieves an account or reports HTTP 404. */
+    @GetMapping("/accounts/{accountId}")
     public GetAccountByIdResponse getAccount(@PathVariable String accountId) {
-        log.info("Attempting to fetch Account by Id: {}", accountId);
-        try {
-            Optional<Account> foundAccount = getAccountByIdComponent.getAccount(accountId);
-
-            if (foundAccount.isPresent()) {
-                return GetAccountByIdResponse.builder()
-                    .account(foundAccount.get())
-                    .success(true)
-                    .build();
-            }
-
-            return GetAccountByIdResponse.builder()
-                .message("AccountId not found")
-                .success(false)
-                .build();
-        } catch (Exception e) {
-            return GetAccountByIdResponse.builder()
-                .success(false)
-                .message(e.getMessage())
-                .build();
-        }
+        Account account = getAccountByIdComponent.getAccount(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        return GetAccountByIdResponse.builder().account(account).success(true).build();
     }
 
-    /**
-     * Puts an {@link Account}.
-     *
-     * @param request .
-     *
-     * @return .
-     */
-    @PutMapping(value = "/accounts")
+    /** Updates a validated existing account. */
+    @PutMapping(value = "/accounts", consumes = MediaType.APPLICATION_JSON_VALUE)
     public PutAccountResponse putAccount(@RequestBody PutAccountRequest request) {
-        Account accountToUpdate = request.getUpdatedAccount();
-        String updatingUser = request.getUpdatingUser();
-
-        try {
-            Account updatedAccount = putAccountComponent.putAccount(accountToUpdate, updatingUser);
-            return PutAccountResponse.builder()
-                .success(true)
-                .updatedAccount(updatedAccount)
-                .build();
-        } catch (Exception e) {
-            return PutAccountResponse.builder()
-                .success(false)
-                .message(e.getMessage())
-                .build();
-        }
+        AccountInputValidator.validate(request.getUpdatedAccount(), request.getUpdatingUser(), true);
+        Account updatedAccount = putAccountComponent.putAccount(request.getUpdatedAccount(), request.getUpdatingUser());
+        return PutAccountResponse.builder().success(true).updatedAccount(updatedAccount).build();
     }
-
 }

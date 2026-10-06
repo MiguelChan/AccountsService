@@ -94,7 +94,7 @@ def main():
                     "--no-daemon", "--max-workers=1", env=env)
                 account = {"title": "HTTP regression", "accountType": "Capital",
                            "subAccounts": [{"description": "original"}]}
-                created = request(base, "POST", "accounts", {"requestingUser": "http-test", "account": account})
+                created = request(base, "POST", "accounts", {"requestingUser": "http-test", "account": account}, expected=201)
                 assert created["success"]
                 account_id = created["accountId"]
                 found = request(base, "GET", "accounts/" + account_id)["account"]
@@ -110,8 +110,21 @@ def main():
                 assert request(base, "DELETE", "subAccounts/" + child["id"])["success"]
                 assert request(base, "GET", "accounts/" + account_id)["account"]["subAccounts"] == []
                 assert request(base, "DELETE", "accounts/" + account_id)["success"]
-                assert not request(base, "GET", "accounts/" + account_id)["success"]
-                print("HTTP CRUD, child editing, creation timestamp and cascade workflow passed", flush=True)
+                assert request(base, "GET", "accounts/" + account_id, expected=404)["code"] == "NOT_FOUND"
+                assert request(base, "DELETE", "accounts/" + account_id, expected=404)["code"] == "NOT_FOUND"
+                assert request(base, "DELETE", "subAccounts/" + child["id"], expected=404)["code"] == "NOT_FOUND"
+                assert request(base, "POST", "accounts", {}, expected=400)["code"] == "INVALID_REQUEST"
+                missing = {"id": "missing", "title": "missing", "accountType": "Capital", "subAccounts": []}
+                assert request(base, "PUT", "accounts", {"updatingUser": "http-test", "updatedAccount": missing}, expected=404)["code"] == "NOT_FOUND"
+                run("docker", "exec", name, "psql", "-U", "postgres", "-d", "accounts_http", "-c",
+                    "ALTER TABLE accountsdb.accounts RENAME TO accounts_failure_probe")
+                try:
+                    failure = request(base, "GET", "accounts", expected=500)
+                    assert failure == {"success": False, "code": "DATABASE_ERROR", "message": "Storage operation failed"}
+                finally:
+                    run("docker", "exec", name, "psql", "-U", "postgres", "-d", "accounts_http", "-c",
+                        "ALTER TABLE accountsdb.accounts_failure_probe RENAME TO accounts")
+                print("HTTP CRUD, validation, 404 and real storage-failure contracts passed", flush=True)
         except BaseException:
             if log.exists():
                 print(log.read_text()[-16000:], flush=True)

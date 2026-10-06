@@ -1,256 +1,120 @@
 package com.mgl.accountsservice.controllers;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.mgl.accountsservice.components.CreateAccountComponent;
 import com.mgl.accountsservice.components.DeleteAccountComponent;
 import com.mgl.accountsservice.components.GetAccountByIdComponent;
 import com.mgl.accountsservice.components.GetAccountsComponent;
 import com.mgl.accountsservice.components.PutAccountComponent;
-import com.mgl.accountsservice.dto.CreateAccountRequest;
-import com.mgl.accountsservice.dto.CreateAccountResponse;
-import com.mgl.accountsservice.dto.DeleteAccountResponse;
-import com.mgl.accountsservice.dto.GetAccountByIdResponse;
-import com.mgl.accountsservice.dto.GetAccountsResponse;
-import com.mgl.accountsservice.dto.PutAccountRequest;
-import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import com.mgl.accountsservice.models.Account;
-import io.github.benas.randombeans.api.EnhancedRandom;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-/**
- * .
- */
-@ExtendWith(MockitoExtension.class)
+/** Tests the public status/envelope contract through Spring MVC. */
 public class AccountsControllerTests {
+    private final CreateAccountComponent create = mock(CreateAccountComponent.class);
+    private final DeleteAccountComponent remove = mock(DeleteAccountComponent.class);
+    private final GetAccountByIdComponent find = mock(GetAccountByIdComponent.class);
+    private final GetAccountsComponent list = mock(GetAccountsComponent.class);
+    private final PutAccountComponent update = mock(PutAccountComponent.class);
+    private MockMvc mvc;
 
-    private static final String TEST_USER = "SomeRandomUser";
+    private static final String CREATE = "{\"requestingUser\":\"test\",\"account\":{\"title\":\"Test\","
+        + "\"accountType\":\"Capital\",\"subAccounts\":[]}}";
+    private static final String UPDATE = "{\"updatingUser\":\"test\",\"updatedAccount\":{\"id\":\"a\","
+        + "\"title\":\"Test\",\"accountType\":\"Capital\",\"subAccounts\":[]}}";
 
-    @Mock
-    private CreateAccountComponent createAccountComponent;
-    @Mock
-    private GetAccountsComponent getAccountsComponent;
-    @Mock
-    private DeleteAccountComponent deleteAccountComponent;
-    @Mock
-    private GetAccountByIdComponent getAccountByIdComponent;
-    @Mock
-    private PutAccountComponent putAccountComponent;
-
-    private AccountsController accountsController;
-
-    /**
-     * .
-     */
     @BeforeEach
-    public void setup() {
-        accountsController = new AccountsController(
-            createAccountComponent,
-            getAccountsComponent,
-            deleteAccountComponent,
-            getAccountByIdComponent,
-            putAccountComponent
-        );
+    void setup() {
+        mvc = MockMvcBuilders.standaloneSetup(new AccountsController(create, list, remove, find, update))
+            .setControllerAdvice(new ApiExceptionHandler()).build();
     }
 
     @Test
-    public void createAccount_should_returnSuccess() {
-        Account account = EnhancedRandom.random(Account.class);
-        String accountId = EnhancedRandom.random(String.class);
-
-        when(createAccountComponent.createAccount(account, TEST_USER)).thenReturn(accountId);
-
-        CreateAccountRequest request = CreateAccountRequest.builder()
-            .account(account)
-            .requestingUser(TEST_USER)
-            .build();
-
-        CreateAccountResponse response = accountsController.createAccount(request);
-
-        assertThat(response.isSuccess()).isTrue();
-        assertThat(response.getAccountId()).isEqualTo(accountId);
-        verify(createAccountComponent).createAccount(account, TEST_USER);
+    void createsWith201() throws Exception {
+        when(create.createAccount(any(), any())).thenReturn("a");
+        mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON).content(CREATE))
+            .andExpect(status().isCreated()).andExpect(jsonPath("$.success").value(true))
+            .andExpect(jsonPath("$.accountId").value("a"));
     }
 
     @Test
-    public void createAccount_should_returnErrorMessage_when_errorOccurs() {
-        String expectedErrorMessage = "SomeRandomErrorMessage";
-        RuntimeException mockException = new RuntimeException(expectedErrorMessage);
-        doThrow(mockException).when(createAccountComponent).createAccount(any(), any());
-
-        Account account = EnhancedRandom.random(Account.class);
-
-        CreateAccountRequest request = CreateAccountRequest.builder()
-            .requestingUser(TEST_USER)
-            .account(account)
-            .build();
-
-        CreateAccountResponse response = accountsController.createAccount(request);
-
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getMessage()).isEqualTo(expectedErrorMessage);
-        verify(createAccountComponent).createAccount(account, TEST_USER);
+    void returnsExistingAccountAndListing() throws Exception {
+        Account account = Account.builder().id("a").subAccounts(List.of()).build();
+        when(find.getAccount("a")).thenReturn(Optional.of(account));
+        when(list.getAccounts()).thenReturn(List.of(account));
+        mvc.perform(get("/accounts/a")).andExpect(status().isOk()).andExpect(jsonPath("$.account.id").value("a"));
+        mvc.perform(get("/accounts")).andExpect(status().isOk()).andExpect(jsonPath("$.accounts[0].id").value("a"));
     }
 
     @Test
-    public void getAccounts_should_getAllAccounts() {
-        List<Account> randomAccounts = EnhancedRandom.randomListOf(5, Account.class);
-
-        when(getAccountsComponent.getAccounts()).thenReturn(randomAccounts);
-
-        GetAccountsResponse response = accountsController.getAccounts();
-
-        assertThat(response).isNotNull();
-        assertThat(response.getAccounts()).isEqualTo(randomAccounts);
+    void missingReadAndDeleteReturn404() throws Exception {
+        when(find.getAccount("missing")).thenReturn(Optional.empty());
+        when(remove.deleteAccount("missing")).thenReturn(Optional.empty());
+        mvc.perform(get("/accounts/missing")).andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        mvc.perform(delete("/accounts/missing")).andExpect(status().isNotFound());
     }
 
     @Test
-    public void getAccounts_should_returnErrorMessage_when_errorOccurs() {
-        String errorMessage = "SomeException";
-        RuntimeException runtimeException = new RuntimeException(errorMessage);
-
-        when(getAccountsComponent.getAccounts()).thenThrow(runtimeException);
-
-        GetAccountsResponse response = accountsController.getAccounts();
-
-        assertThat(response).isNotNull();
-        assertThat(response.getAccounts()).isNull();
-        assertThat(response.getMessage()).isEqualTo(errorMessage);
+    void editsAndDeletesExistingAccount() throws Exception {
+        Account account = Account.builder().id("a").subAccounts(List.of()).build();
+        when(update.putAccount(any(), any())).thenReturn(account);
+        when(remove.deleteAccount("a")).thenReturn(Optional.of(account));
+        mvc.perform(put("/accounts").contentType(MediaType.APPLICATION_JSON).content(UPDATE))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.updatedAccount.id").value("a"));
+        mvc.perform(delete("/accounts/a")).andExpect(status().isOk()).andExpect(jsonPath("$.success").value(true));
     }
 
     @Test
-    public void deleteAccount_should_deleteAccount() {
-        String testAccountId = "SomeId";
-
-        Account account = EnhancedRandom.random(Account.class);
-        when(deleteAccountComponent.deleteAccount(testAccountId)).thenReturn(Optional.of(account));
-
-        DeleteAccountResponse response = accountsController.deleteAccount(testAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isTrue();
-        assertThat(response.getDeletedAccount()).isEqualTo(account);
+    void storageFailureIs500WithoutInternalMessage() throws Exception {
+        when(find.getAccount("a")).thenThrow(new DatabaseException("jdbc password=secret", null));
+        mvc.perform(get("/accounts/a")).andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.success").value(false)).andExpect(jsonPath("$.code").value("DATABASE_ERROR"))
+            .andExpect(jsonPath("$.message").value("Storage operation failed"));
     }
 
     @Test
-    public void deleteAccount_should_bubbleUpException() {
-        String testAccountId = "SomeId";
-        when(deleteAccountComponent.deleteAccount(testAccountId))
-            .thenThrow(DatabaseException.class);
-
-        DeleteAccountResponse response = accountsController.deleteAccount(testAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getDeletedAccount()).isNull();
+    void unexpectedFailureIsSafe500() throws Exception {
+        when(list.getAccounts()).thenThrow(new IllegalStateException("internal details"));
+        mvc.perform(get("/accounts")).andExpect(status().isInternalServerError())
+            .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
+            .andExpect(jsonPath("$.message").value("Unexpected server error"));
     }
 
     @Test
-    public void deleteAccount_should_returnUnsuccessfulMessage_when_accountIsNotPresent() {
-        String testAccountId = "SomeSome";
-
-        when(deleteAccountComponent.deleteAccount(testAccountId)).thenReturn(Optional.empty());
-
-        DeleteAccountResponse response = accountsController.deleteAccount(testAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getDeletedAccount()).isNull();
+    void invalidWritesNeverReachComponents() throws Exception {
+        for (String body : List.of("{}", CREATE.replace("Test", " "), CREATE.replace("[]", "[null]"),
+            CREATE.replace("Capital", "unknown"), CREATE.replace("\"test\"", "null"))) {
+            mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        }
+        mvc.perform(put("/accounts").contentType(MediaType.APPLICATION_JSON).content("{}"))
+            .andExpect(status().isBadRequest());
+        verifyNoInteractions(create, update);
     }
 
     @Test
-    public void getAccountById_should_returnAccount() {
-        String testAccountId = "SomeSome";
-
-        Account expectedAccount = EnhancedRandom.random(Account.class);
-
-        when(getAccountByIdComponent.getAccount(testAccountId))
-            .thenReturn(Optional.of(expectedAccount));
-
-        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isTrue();
-
-        Account foundAccount = response.getAccount();
-        assertThat(foundAccount).isEqualTo(expectedAccount);
+    void malformedJsonAndUnsupportedMediaAreClassified() throws Exception {
+        mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON).content("{"))
+            .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        mvc.perform(post("/accounts").contentType(MediaType.TEXT_PLAIN).content(CREATE))
+            .andExpect(status().isUnsupportedMediaType()).andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
+        verifyNoInteractions(create);
     }
-
-    @Test
-    public void getAccountById_should_returnEmptyResponse_when_accountDoesNotExist() {
-        String testAccountId = "SomeSome";
-
-        when(getAccountByIdComponent.getAccount(testAccountId)).thenReturn(Optional.empty());
-
-        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getAccount()).isNull();
-    }
-
-    @Test
-    public void getAccountById_should_returnEmptyResponse_when_componentFails() {
-        String testAccountId = "SomeSome";
-        String expectedErrorMessage = "There was an unexpected error";
-
-        RuntimeException exception = new RuntimeException(expectedErrorMessage);
-
-        when(getAccountByIdComponent.getAccount(testAccountId)).thenThrow(exception);
-
-        GetAccountByIdResponse response = accountsController.getAccount(testAccountId);
-
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getMessage()).isEqualTo(expectedErrorMessage);
-    }
-
-    @Test
-    public void putAccount_should_put() {
-        String updatingUser = EnhancedRandom.random(String.class);
-        Account accountToUpdate = EnhancedRandom.random(Account.class);
-        when(putAccountComponent.putAccount(accountToUpdate, updatingUser))
-            .thenReturn(accountToUpdate);
-
-        PutAccountRequest request = PutAccountRequest.builder()
-            .updatedAccount(accountToUpdate)
-            .updatingUser(updatingUser)
-            .build();
-
-        PutAccountResponse response = accountsController.putAccount(request);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isTrue();
-        assertThat(response.getUpdatedAccount()).isEqualTo(accountToUpdate);
-    }
-
-    @Test
-    public void putAccount_should_returnUnsuccessfulResponse_uponFailure() {
-        String errorMessage = "SomeErrorMessage";
-        RuntimeException exception = new RuntimeException(errorMessage);
-
-        when(putAccountComponent.putAccount(any(), any())).thenThrow(exception);
-
-        PutAccountRequest request = PutAccountRequest.builder()
-            .updatingUser("SomeSome")
-            .updatedAccount(Account.builder().build())
-            .build();
-
-        PutAccountResponse response = accountsController.putAccount(request);
-
-        assertThat(response).isNotNull();
-        assertThat(response.isSuccess()).isFalse();
-        assertThat(response.getMessage()).isEqualTo(errorMessage);
-    }
-
 }
