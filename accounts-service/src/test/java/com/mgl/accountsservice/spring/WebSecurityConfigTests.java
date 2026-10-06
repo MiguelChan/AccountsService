@@ -9,7 +9,7 @@ import com.mgl.accountsservice.controllers.HealthController;
 import com.mgl.accountsservice.dao.HealthDao;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -31,6 +31,12 @@ public class WebSecurityConfigTests {
         mvc.perform(options("/ping").header("Origin", "https://untrusted.example")
             .header("Access-Control-Request-Method", "GET"))
             .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void actualCrossOriginRequestKeepsItsExistingResponseWithoutCorsPermission() throws Exception {
+        mvc.perform(get("/ping").header("Origin", "https://untrusted.example"))
+            .andExpect(status().isOk()).andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 
     @Test

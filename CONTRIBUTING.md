@@ -103,12 +103,18 @@ The Java toolchain makes local compilation and tests use the same baseline as CI
 
 ## Framework baseline
 
-The service uses Spring Boot 3.5.16, MyBatis starter 3.0.5, Flyway 11.20.3,
+The service uses Spring Boot 4.1.1, MyBatis starter 4.1.0, Flyway 11.20.3,
 and Gradle 9.8.0 on Java 25. Flyway includes the PostgreSQL database module
 in the Gradle migration classpath. Migrations remain an explicit deployment step;
 starting the application does not run schema changes.
+Jackson 3 uses Boot's Jackson 2 compatibility defaults to preserve existing JSON
+coercion and date handling. Java time support is built in; the old Jackson 2 module
+bean has been removed. MVC/security test starters exercise the modular Boot 4 stack.
+The service uses JDBC/MyBatis directly; no JPA entities or repositories are present.
 SecurityFilterChain preserves anonymous API access, disabled CSRF for the existing
-API, MVC CORS handling and the existing proxy HTTPS requirement. This migration
+API, MVC CORS handling and the existing proxy HTTPS requirement. Framework 7 skips null
+CORS configurations, so the filter explicitly rejects unconfigured preflights while
+keeping actual cross-origin response behavior unchanged (no CORS permission headers). This migration
 does not introduce authentication or broaden allowed cross-origin access.
 
 ## HTTP contract
