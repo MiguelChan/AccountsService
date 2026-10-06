@@ -8,7 +8,7 @@ group 'com.mgl'
 version '1.0.0'
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -32,6 +32,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -59,7 +60,7 @@ tasks.register('release') {
 }
 
 jacoco {
-    toolVersion = '0.8.13'
+    toolVersion = '0.8.14'
     reportsDirectory.set(file("$buildDir/jacoco"))
 }
 
