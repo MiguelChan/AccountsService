@@ -100,3 +100,13 @@ Use JDK 17 and the root `./gradlew` wrapper for every module. Set `JAVA_HOME`
 to your JDK 17 installation before invoking the isolated regression harness.
 Module-local wrapper copies have been removed to keep one authoritative version.
 The Java toolchain makes local compilation and tests use the same baseline as CI.
+
+## Framework baseline
+
+The service uses Spring Boot 3.5.16, MyBatis starter 3.0.5, Flyway 11.20.3,
+and Gradle 8.14.5 on Java 17. Flyway includes the PostgreSQL database module
+in the Gradle migration classpath. Migrations remain an explicit deployment step;
+starting the application does not run schema changes.
+SecurityFilterChain preserves anonymous API access, disabled CSRF for the existing
+API, MVC CORS handling and the existing proxy HTTPS requirement. This migration
+does not introduce authentication or broaden allowed cross-origin access.
