@@ -18,7 +18,7 @@ group = 'com.mgl'
 version = '1.0.0'
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -48,6 +48,7 @@ dependencies {
     testImplementation 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'io.github.benas:random-beans:3.7.0'
 
 }
@@ -93,7 +94,7 @@ flyway {
 }
 
 jacoco {
-    toolVersion = '0.8.13'
+    toolVersion = '0.8.14'
     reportsDirectory.set(file("$buildDir/jacoco"))
 }
 
