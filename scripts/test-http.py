@@ -44,10 +44,10 @@ def main():
     with tempfile.TemporaryDirectory(prefix="accounts-http-") as scratch:
         log = Path(scratch) / "app.log"
         try:
-            run("docker", "run", "--detach", "--rm", "--name", name,
+            started = True
+            run("docker", "run", "--detach", "--name", name,
                 "-e", "POSTGRES_PASSWORD=local-test-only", "-e", "POSTGRES_DB=accounts_http",
                 "-p", "127.0.0.1::5432", "postgres:16-alpine")
-            started = True
             for _ in range(60):
                 ready = subprocess.run(["docker", "exec", name, "psql", "-U", "postgres",
                                         "-d", "accounts_http", "-Atc", "SELECT 1"],
@@ -83,7 +83,7 @@ def main():
                     if app.poll() is not None:
                         raise RuntimeError("Application exited before readiness")
                     try:
-                        request(base, "GET", "deep_ping")
+                        assert request(base, "GET", "deep_ping")["healthy"]
                         break
                     except (OSError, ValueError, AssertionError):
                         time.sleep(1)
@@ -126,10 +126,10 @@ def main():
                         app.kill()
                         app.wait(timeout=10)
             if started:
-                run("docker", "stop", name)
                 remaining = subprocess.check_output(["docker", "ps", "-aq", "--filter", "name=^/" + name + "$"], text=True).strip()
                 if remaining:
-                    run("docker", "rm", "--force", name)
+                    run("docker", "stop", name)
+                    run("docker", "rm", name)
                 remaining = subprocess.check_output(["docker", "ps", "-aq", "--filter", "name=^/" + name + "$"], text=True).strip()
                 assert not remaining, "Owned test container still exists"
 
