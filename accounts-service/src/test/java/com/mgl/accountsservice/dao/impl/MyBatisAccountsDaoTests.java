@@ -60,18 +60,18 @@ public class MyBatisAccountsDaoTests {
         List<AccountEntity> expectedAccounts =
             EnhancedRandom.randomListOf(5, AccountEntity.class);
 
-        when(accountsMapper.getAccounts()).thenReturn(expectedAccounts);
+        when(accountsMapper.getAccounts(50, 0)).thenReturn(expectedAccounts);
 
-        List<AccountEntity> foundAccounts = accountsDao.getAccounts();
+        List<AccountEntity> foundAccounts = accountsDao.getAccounts(50, 0);
 
         assertThat(foundAccounts).isEqualTo(expectedAccounts);
     }
 
     @Test
     public void getAccounts_should_bubbleUpExceptions() throws Exception {
-        when(accountsMapper.getAccounts()).thenThrow(RuntimeException.class);
+        when(accountsMapper.getAccounts(50, 0)).thenThrow(RuntimeException.class);
 
-        assertThatThrownBy(() -> accountsDao.getAccounts())
+        assertThatThrownBy(() -> accountsDao.getAccounts(50, 0))
             .isInstanceOfAny(DatabaseException.class);
     }
 

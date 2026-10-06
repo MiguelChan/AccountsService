@@ -14,6 +14,9 @@ import lombok.EqualsAndHashCode;
 public class GetAccountsResponse extends BaseResponse {
 
     private List<Account> accounts;
+    private int limit;
+    private int offset;
+    private boolean hasMore;
 
     /**
      * Default constructor.
@@ -24,8 +27,14 @@ public class GetAccountsResponse extends BaseResponse {
      */
     @Builder
     public GetAccountsResponse(String message,
-                               List<Account> accounts) {
+                               List<Account> accounts,
+                               int limit,
+                               int offset,
+                               boolean hasMore) {
         super(message);
         this.accounts = accounts;
+        this.limit = limit;
+        this.offset = offset;
+        this.hasMore = hasMore;
     }
 }

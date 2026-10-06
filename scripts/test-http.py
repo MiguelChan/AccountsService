@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run the packaged application and functional suite against disposable PostgreSQL."""
+from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -116,6 +117,48 @@ def main():
                 assert request(base, "POST", "accounts", {}, expected=400)["code"] == "INVALID_REQUEST"
                 missing = {"id": "missing", "title": "missing", "accountType": "Capital", "subAccounts": []}
                 assert request(base, "PUT", "accounts", {"updatingUser": "http-test", "updatedAccount": missing}, expected=404)["code"] == "NOT_FOUND"
+                # Exercise cumulative bounds with two real transactions on the same parent.
+                capped = {"title": "x" * 100, "accountType": "Capital",
+                          "subAccounts": [{"description": "child"} for _ in range(99)]}
+                cap_id = request(base, "POST", "accounts", {"requestingUser": "http-test", "account": capped}, expected=201)["accountId"]
+                additions = {"updatingUser": "http-test", "updatedAccount": {
+                    "id": cap_id, "title": "capped", "accountType": "Capital", "subAccounts": [{"description": "new"}]}}
+                def add_child(_):
+                    try:
+                        request(base, "PUT", "accounts", additions)
+                        return 200
+                    except AssertionError as error:
+                        assert error.args[0][2] == 400, error
+                        return 400
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    assert sorted(pool.map(add_child, range(2))) == [200, 400]
+                assert len(request(base, "GET", "accounts/" + cap_id)["account"]["subAccounts"]) == 100
+                owner = {"title": "other", "accountType": "Capital", "subAccounts": [{"description": "owned"}]}
+                owner_id = request(base, "POST", "accounts", {"requestingUser": "http-test", "account": owner}, expected=201)["accountId"]
+                owned = request(base, "GET", "accounts/" + owner_id)["account"]["subAccounts"][0]
+                additions["updatedAccount"]["subAccounts"] = [owned]
+                assert request(base, "PUT", "accounts", additions, expected=400)["code"] == "INVALID_REQUEST"
+                assert request(base, "GET", "accounts/" + owner_id)["account"]["subAccounts"][0] == owned
+                for invalid in [dict(capped, title="x" * 101), dict(capped, subAccounts=[{"description": "x" * 101}]),
+                                dict(capped, subAccounts=[{"description": "child"} for _ in range(101)])]:
+                    assert request(base, "POST", "accounts", {"requestingUser": "http-test", "account": invalid}, expected=400)["code"] == "INVALID_REQUEST"
+                run("docker", "exec", name, "psql", "-U", "postgres", "-d", "accounts_http", "-c",
+                    "INSERT INTO accountsdb.accounts (id, name, account_type, created_at) "
+                    "SELECT 'page-' || lpad(n::text, 3, '0'), 'Page', 'Capital', timestamp '2099-01-01' FROM generate_series(1,103) n; "
+                    "INSERT INTO accountsdb.sub_accounts (id, description, account_id) "
+                    "SELECT 'child-' || lpad(n::text, 3, '0'), 'Page child', 'page-' || lpad(n::text, 3, '0') FROM generate_series(1,103) n")
+                first = request(base, "GET", "accounts?limit=2&offset=0")
+                assert [row["id"] for row in first["accounts"]] == ["page-001", "page-002"]
+                assert first["limit"] == 2 and first["offset"] == 0 and first["hasMore"]
+                assert [[child["id"] for child in row["subAccounts"]] for row in first["accounts"]] == [["child-001"], ["child-002"]]
+                assert request(base, "GET", "accounts?limit=2&offset=0") == first
+                second = request(base, "GET", "accounts?limit=2&offset=2")
+                assert [row["id"] for row in second["accounts"]] == ["page-003", "page-004"]
+                assert len(request(base, "GET", "accounts")["accounts"]) == 50
+                assert len(request(base, "GET", "accounts?limit=100")["accounts"]) == 100
+                assert not request(base, "GET", "accounts?offset=1000")["hasMore"]
+                for query in ["limit=0", "limit=101", "limit=abc", "offset=-1", "offset=100001"]:
+                    assert request(base, "GET", "accounts?" + query, expected=400)["code"] == "INVALID_REQUEST"
                 run("docker", "exec", name, "psql", "-U", "postgres", "-d", "accounts_http", "-c",
                     "ALTER TABLE accountsdb.accounts RENAME TO accounts_failure_probe")
                 try:
@@ -124,7 +167,7 @@ def main():
                 finally:
                     run("docker", "exec", name, "psql", "-U", "postgres", "-d", "accounts_http", "-c",
                         "ALTER TABLE accountsdb.accounts_failure_probe RENAME TO accounts")
-                print("HTTP CRUD, validation, 404 and real storage-failure contracts passed", flush=True)
+                print("HTTP CRUD, bounded pages, concurrent child limits, validation and real storage errors passed", flush=True)
         except BaseException:
             if log.exists():
                 print(log.read_text()[-16000:], flush=True)

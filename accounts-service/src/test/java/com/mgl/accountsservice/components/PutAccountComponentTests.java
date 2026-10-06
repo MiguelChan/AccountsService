@@ -82,6 +82,7 @@ public class PutAccountComponentTests {
 
         // 2.- Setting Mappers
         SubAccountEntity existingSubAccountEntity = EnhancedRandom.random(SubAccountEntity.class);
+        existingSubAccountEntity.setId(existingSubAccount.getId());
         SubAccountEntity newSubAccountEntity = EnhancedRandom.random(SubAccountEntity.class, "id");
 
         when(subAccountsEntityMapper.fromModel(existingSubAccount)).thenReturn(existingSubAccountEntity);
@@ -96,6 +97,7 @@ public class PutAccountComponentTests {
         when(accountsEntityMapper.fromEntity(accountEntity)).thenReturn(account);
 
         // 3.- Setting up DAO's
+        when(accountsDao.getAccountForUpdate(any())).thenReturn(accountEntity);
         when(accountsDao.getAccount(any())).thenReturn(accountEntity);
         when(subAccountsDao.getSubAccounts(any())).thenReturn(Lists.newArrayList(existingSubAccountEntity, newSubAccountEntity));
 
@@ -114,7 +116,7 @@ public class PutAccountComponentTests {
     @Test
     void missingAccountMustNotMutateChildren() {
         Account account = Account.builder().id("missing").subAccounts(List.of()).build();
-        when(accountsDao.getAccount("missing")).thenReturn(null);
+        when(accountsDao.getAccountForUpdate("missing")).thenReturn(null);
         assertThatThrownBy(() -> component.putAccount(account, TEST_USER)).isInstanceOf(ResourceNotFoundException.class);
         verifyNoInteractions(subAccountsDao, accountsEntityMapper, subAccountsEntityMapper);
     }

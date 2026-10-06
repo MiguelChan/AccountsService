@@ -4,6 +4,7 @@ import com.mgl.accountsservice.dao.AccountsDao;
 import com.mgl.accountsservice.dao.SubAccountsDao;
 import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.dao.entities.SubAccountEntity;
+import com.mgl.accountsservice.exceptions.InvalidRequestException;
 import com.mgl.accountsservice.exceptions.ResourceNotFoundException;
 import com.mgl.accountsservice.mappers.AccountsEntityMapper;
 import com.mgl.accountsservice.mappers.SubAccountsEntityMapper;
@@ -11,6 +12,7 @@ import com.mgl.accountsservice.models.Account;
 import com.mgl.accountsservice.models.SubAccount;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +64,18 @@ public class PutAccountComponent {
     @Transactional
     public Account putAccount(Account newAccount, String updatingUser) {
         validateAccount(newAccount);
-        if (accountsDao.getAccount(newAccount.getId()) == null) {
+        if (accountsDao.getAccountForUpdate(newAccount.getId()) == null) {
             throw new ResourceNotFoundException("Account not found");
+        }
+
+        List<SubAccountEntity> storedChildren = subAccountsDao.getSubAccounts(newAccount.getId());
+        Set<String> storedIds = storedChildren.stream().map(SubAccountEntity::getId).collect(Collectors.toSet());
+        long additions = newAccount.getSubAccounts().stream().filter(child -> child.getId() == null).count();
+        if (storedChildren.size() + additions > 100) {
+            throw new InvalidRequestException("An account may contain at most 100 subAccounts");
+        }
+        if (newAccount.getSubAccounts().stream().anyMatch(child -> child.getId() != null && !storedIds.contains(child.getId()))) {
+            throw new InvalidRequestException("SubAccount does not belong to this account");
         }
 
         List<SubAccountEntity> existingSubAccounts =

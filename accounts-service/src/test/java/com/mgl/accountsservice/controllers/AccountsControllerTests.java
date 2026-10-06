@@ -58,7 +58,7 @@ public class AccountsControllerTests {
     void returnsExistingAccountAndListing() throws Exception {
         Account account = Account.builder().id("a").subAccounts(List.of()).build();
         when(find.getAccount("a")).thenReturn(Optional.of(account));
-        when(list.getAccounts()).thenReturn(List.of(account));
+        when(list.getAccounts(51, 0)).thenReturn(List.of(account));
         mvc.perform(get("/accounts/a")).andExpect(status().isOk()).andExpect(jsonPath("$.account.id").value("a"));
         mvc.perform(get("/accounts")).andExpect(status().isOk()).andExpect(jsonPath("$.accounts[0].id").value("a"));
     }
@@ -91,7 +91,7 @@ public class AccountsControllerTests {
 
     @Test
     void unexpectedFailureIsSafe500() throws Exception {
-        when(list.getAccounts()).thenThrow(new IllegalStateException("internal details"));
+        when(list.getAccounts(51, 0)).thenThrow(new IllegalStateException("internal details"));
         mvc.perform(get("/accounts")).andExpect(status().isInternalServerError())
             .andExpect(jsonPath("$.code").value("INTERNAL_ERROR"))
             .andExpect(jsonPath("$.message").value("Unexpected server error"));
@@ -117,4 +117,34 @@ public class AccountsControllerTests {
             .andExpect(status().isUnsupportedMediaType()).andExpect(jsonPath("$.code").value("UNSUPPORTED_MEDIA_TYPE"));
         verifyNoInteractions(create);
     }
+
+    @Test
+    void validatesPaginationBeforeReading() throws Exception {
+        for (String query : List.of("limit=0", "limit=101", "offset=-1", "offset=100001", "limit=abc")) {
+            mvc.perform(get("/accounts?" + query)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+        }
+        verifyNoInteractions(list);
+    }
+
+    @Test
+    void lookaheadIsNotReturnedAndIndicatesNextPage() throws Exception {
+        Account first = Account.builder().id("a").build();
+        Account second = Account.builder().id("b").build();
+        when(list.getAccounts(2, 5)).thenReturn(List.of(first, second));
+        mvc.perform(get("/accounts?limit=1&offset=5")).andExpect(status().isOk())
+            .andExpect(jsonPath("$.accounts.length()").value(1)).andExpect(jsonPath("$.accounts[0].id").value("a"))
+            .andExpect(jsonPath("$.hasMore").value(true)).andExpect(jsonPath("$.limit").value(1))
+            .andExpect(jsonPath("$.offset").value(5));
+    }
+
+    @Test
+    void rejectsOversizedInputsBeforeWriting() throws Exception {
+        for (String body : List.of(CREATE.replace("Test", "x".repeat(101)), CREATE.replace("test", "x".repeat(31)))) {
+            mvc.perform(post("/accounts").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+        }
+        verifyNoInteractions(create);
+    }
+
 }

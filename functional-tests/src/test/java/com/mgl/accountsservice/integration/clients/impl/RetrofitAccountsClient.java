@@ -16,6 +16,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Defines the underlying Retrofit Client for the AccountsService.
@@ -54,7 +55,7 @@ public interface RetrofitAccountsClient {
      * @return .
      */
     @GET("accounts")
-    Call<GetAccountsResponse> getAccounts();
+    Call<GetAccountsResponse> getAccounts(@Query("limit") Integer limit, @Query("offset") Integer offset);
 
     /**
      * .

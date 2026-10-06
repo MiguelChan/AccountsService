@@ -14,6 +14,7 @@ import com.mgl.accountsservice.dto.PutAccountRequest;
 import com.mgl.accountsservice.dto.PutAccountResponse;
 import com.mgl.accountsservice.exceptions.ResourceNotFoundException;
 import com.mgl.accountsservice.models.Account;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,8 +63,13 @@ public class AccountsController {
 
     /** Retrieves accounts and their children. */
     @GetMapping("/accounts")
-    public GetAccountsResponse getAccounts() {
-        return GetAccountsResponse.builder().accounts(getAccountsComponent.getAccounts()).build();
+    public GetAccountsResponse getAccounts(@RequestParam(defaultValue = "50") int limit,
+                                           @RequestParam(defaultValue = "0") int offset) {
+        AccountInputValidator.validatePage(limit, offset);
+        List<Account> accounts = getAccountsComponent.getAccounts(limit + 1, offset);
+        boolean hasMore = accounts.size() > limit;
+        List<Account> page = hasMore ? accounts.subList(0, limit) : accounts;
+        return GetAccountsResponse.builder().accounts(page).limit(limit).offset(offset).hasMore(hasMore).build();
     }
 
     /** Deletes an account or reports HTTP 404. */

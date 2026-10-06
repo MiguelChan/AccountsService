@@ -41,6 +41,7 @@
         FROM accountsdb.sub_accounts AS sa
         WHERE
             sa.account_id = #{accountId}
+        ORDER BY sa.id ASC
     </select>
 
     <select id="getSubAccountsForAccounts" resultMap="SubAccount">
@@ -57,6 +58,7 @@
             </when>
             <otherwise>FALSE</otherwise>
         </choose>
+        ORDER BY sa.account_id ASC, sa.id ASC
     </select>
 
     <select id="getSubAccount" resultMap="SubAccount">

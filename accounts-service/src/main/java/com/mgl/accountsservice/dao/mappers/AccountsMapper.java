@@ -4,6 +4,7 @@ import com.mgl.accountsservice.dao.entities.AccountEntity;
 import com.mgl.accountsservice.exceptions.DatabaseException;
 import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * .
@@ -23,7 +24,7 @@ public interface AccountsMapper {
      *
      * @return .
      */
-    List<AccountEntity> getAccounts() throws DatabaseException;
+    List<AccountEntity> getAccounts(@Param("limit") int limit, @Param("offset") int offset) throws DatabaseException;
 
     /**
      * .
@@ -35,6 +36,9 @@ public interface AccountsMapper {
      * @throws DatabaseException .
      */
     AccountEntity getAccount(String accountId) throws DatabaseException;
+
+    /** Locks a parent row while validating and updating its children. */
+    AccountEntity getAccountForUpdate(String accountId) throws DatabaseException;
 
     /**
      * .
