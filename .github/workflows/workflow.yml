@@ -4,7 +4,6 @@ on:
   push:
     branches: [ mainline ]
   pull_request:
-    branches: [ mainline ]
   workflow_dispatch:
 
 jobs:
@@ -59,3 +58,6 @@ jobs:
               print('PostgreSQL regression:', name, counts)
               assert counts['tests'] > 0 and all(counts[key] == 0 for key in ('failures', 'errors', 'skipped')), (name, counts)
           PY
+
+      - name: Run isolated HTTP functional suite
+        run: python3 scripts/test-http.py
