@@ -90,6 +90,17 @@ def main():
                         time.sleep(1)
                 else:
                     raise RuntimeError("Application readiness timed out")
+                # Preserve CORS status/header behavior against the packaged filter chain.
+                preflight = urllib.request.Request(base + "ping", method="OPTIONS", headers={
+                    "Origin": "https://untrusted.example", "Access-Control-Request-Method": "GET"})
+                try:
+                    with urllib.request.urlopen(preflight, timeout=10):
+                        raise AssertionError("Unconfigured CORS preflight was accepted")
+                except urllib.error.HTTPError as error:
+                    assert error.code == 403 and error.headers.get("Access-Control-Allow-Origin") is None
+                cross_origin = urllib.request.Request(base + "ping", headers={"Origin": "https://untrusted.example"})
+                with urllib.request.urlopen(cross_origin, timeout=10) as response:
+                    assert response.status == 200 and response.headers.get("Access-Control-Allow-Origin") is None
                 env["ACCOUNTS_SERVICE_BASE_URL"] = base
                 run("bash", "gradlew", ":functional-tests:test", ":functional-tests:checkstyleTest",
                     "--no-daemon", "--max-workers=1", env=env)
@@ -100,6 +111,7 @@ def main():
                 account_id = created["accountId"]
                 found = request(base, "GET", "accounts/" + account_id)["account"]
                 creation = found["subAccounts"][0]["createdAt"]
+                assert isinstance(creation, str) and "T" in creation, "Creation timestamp must remain an ISO date string"
                 found["title"] = "edited"
                 found["subAccounts"][0]["description"] = "edited child"
                 edited = request(base, "PUT", "accounts", {"updatingUser": "http-test", "updatedAccount": found})
